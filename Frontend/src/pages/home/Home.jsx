@@ -17,12 +17,23 @@ import {
 } from "react-icons/fi";
 import { FaLaptop } from "react-icons/fa";
 import { GiSofa } from "react-icons/gi";
+import { 
+  Users, 
+  ShoppingBag, 
+  Repeat, 
+  Search, 
+  MessageSquare, 
+  Handshake, 
+  Sparkles,
+  Compass
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import PageShell from "../../components/common/PageShell";
 import SectionHeader from "../../components/common/SectionHeader";
 import ProductCard from "../../components/cards/ProductCard";
+import ProductCarousel from "../../components/common/ProductCarousel";
 import SkeletonCard from "../../components/common/SkeletonCard";
 import fortImage from "../../assets/sindhu.jpg";
 import productImage from "../../assets/sawantwadi.jpg";
@@ -55,9 +66,9 @@ const itemVariants = {
 };
 
 const stats = [
-  { value: "1000+", label: "Happy Users", icon: FiUsers },
-  { value: "500+", label: "Items Listed", icon: FiShoppingBag },
-  { value: "200+", label: "Book Swaps", icon: FiRefreshCw },
+  { value: "1000+", label: "Happy Users", icon: Users, desc: "Connecting students, readers, and locals daily." },
+  { value: "500+", label: "Items Listed", icon: ShoppingBag, desc: "Gently used goods and quality textbooks." },
+  { value: "200+", label: "Book Swaps", icon: Repeat, desc: "Sharing knowledge across the community." },
 ];
 
 const features = [
@@ -115,6 +126,41 @@ function Home() {
       return matchSearch && matchCategory;
     });
   }, [search, selectedCategory]);
+
+  const [[page, direction], setPage] = useState([0, 0]);
+  const [visibleCards, setVisibleCards] = useState(4);
+
+  // Monitor responsive columns based on viewport size (strict implementation specs)
+  useEffect(() => {
+    const updateVisibleCards = () => {
+      const w = window.innerWidth;
+      if (w >= 1024) setVisibleCards(4);
+      else if (w >= 768) setVisibleCards(3);
+      else setVisibleCards(1);
+    };
+    updateVisibleCards();
+    window.addEventListener("resize", updateVisibleCards);
+    return () => window.removeEventListener("resize", updateVisibleCards);
+  }, []);
+
+  // Use all filtered products
+  const carouselProducts = filteredProducts;
+
+  const pageSize = visibleCards * 2;
+  const maxPages = Math.ceil(carouselProducts.length / pageSize);
+
+  // Reset index when filter changes
+  useEffect(() => {
+    setPage([0, 0]);
+  }, [selectedCategory, search]);
+
+  const handlePrev = () => {
+    setPage(([prevPage]) => [Math.max(0, prevPage - 1), -1]);
+  };
+
+  const handleNext = () => {
+    setPage(([prevPage]) => [Math.min(maxPages - 1, prevPage + 1), 1]);
+  };
 
   const handleCategoryClick = (categoryName) => {
     setLoading(true);
@@ -287,24 +333,38 @@ function Home() {
         <SectionHeader
           title={selectedCategory === "All" ? "Featured Listings" : `${selectedCategory} Products`}
           action={
-            <div className="pager">
-              <button type="button" aria-label="Previous listing">
-                <FiChevronLeft />
-              </button>
-              <button type="button" aria-label="Next listing">
-                <FiChevronRight />
-              </button>
-            </div>
+            maxPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label="Previous listing"
+                  onClick={handlePrev}
+                  disabled={page === 0}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm hover:bg-slate-50 text-slate-700 transition-all duration-200 disabled:opacity-40 disabled:hover:bg-white cursor-pointer disabled:cursor-not-allowed active:scale-95"
+                >
+                  <FiChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next listing"
+                  onClick={handleNext}
+                  disabled={page >= maxPages - 1}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm hover:bg-slate-50 text-slate-700 transition-all duration-200 disabled:opacity-40 disabled:hover:bg-white cursor-pointer disabled:cursor-not-allowed active:scale-95"
+                >
+                  <FiChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            )
           }
         />
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, idx) => (
+          <div className={`grid ${visibleCards === 4 ? "grid-cols-4" : visibleCards === 3 ? "grid-cols-3" : "grid-cols-1"} gap-x-8 gap-y-6 w-full mx-auto px-4 md:px-6 lg:px-8 max-w-7xl`}>
+            {Array.from({ length: visibleCards * 2 }).map((_, idx) => (
               <SkeletonCard key={idx} />
             ))}
           </div>
-        ) : filteredProducts.length === 0 ? (
+        ) : carouselProducts.length === 0 ? (
           <div className="empty-state">
             <FiSearch size={48} />
             <h3>No products found</h3>
@@ -314,88 +374,134 @@ function Home() {
             </button>
           </div>
         ) : (
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.1 }}
-          >
-            {filteredProducts.map((item) => (
-              <motion.div
-                key={item.id}
-                variants={itemVariants}
-                className="h-full"
-              >
-                <ProductCard item={item} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <ProductCarousel
+            items={carouselProducts}
+            page={page}
+            setPage={setPage}
+            visibleCards={visibleCards}
+            maxPages={maxPages}
+            direction={direction}
+          />
         )}
       </section>
 
       <motion.section
-        className="stats-work container home-process-section"
+        className="py-20 px-6 md:px-12 lg:px-20 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-16 lg:gap-24 items-start"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.25 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={reveal}
       >
-        <div className="stats-grid home-stats-grid">
+        {/* Left Column: Statistics */}
+        <div className="flex flex-col sm:flex-row lg:flex-col gap-6 w-full lg:w-auto shrink-0 justify-center lg:justify-start items-center">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <motion.article
-                className="stat-card"
+              <motion.div
+                className="group relative flex flex-col justify-between items-start p-6 bg-white border border-slate-100/95 rounded-[22px] shadow-[0_8px_30px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(16,185,129,0.06)] hover:border-emerald-200/40 w-full sm:w-[200px] h-[155px] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer overflow-hidden"
                 key={stat.label}
-                initial={{ scale: 0.9, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.45 }}
+                whileHover={{ y: -6 }}
               >
-                <Icon />
-                <strong>{stat.value}</strong>
-                <span>{stat.label}</span>
-              </motion.article>
+                {/* Subtle soft gradient glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-emerald-500/[0.015] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                <div className="text-slate-400 group-hover:text-emerald-500 transition-all duration-300 group-hover:scale-105 transform origin-left">
+                  <Icon className="w-6 h-6 stroke-[1.75]" />
+                </div>
+                
+                <div className="mt-auto space-y-1 z-10">
+                  <span className="text-[28px] font-extrabold text-slate-800 tracking-tight leading-none">
+                    {stat.value}
+                  </span>
+                  <h4 className="text-xs font-semibold text-slate-500 tracking-wide uppercase">
+                    {stat.label}
+                  </h4>
+                  <p className="text-[10px] text-slate-400 font-medium leading-normal line-clamp-1">
+                    {stat.desc}
+                  </p>
+                </div>
+              </motion.div>
             );
           })}
         </div>
 
-        <div className="work-panel home-how-panel">
-          <SectionHeader eyebrow="Simple local flow" title="How It Works?" />
-          <div className="steps home-steps">
+        {/* Right Column: How It Works */}
+        <div className="flex-1 w-full text-left">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50/80 text-emerald-700 border border-emerald-100/50 mb-3.5 tracking-wide uppercase">
+            <Sparkles className="w-3 h-3" />
+            Simple Local Flow
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-slate-900 tracking-tight leading-none mb-4">
+            How It Works?
+          </h2>
+          
+          <p className="text-slate-500 text-base md:text-lg max-w-xl mb-12 font-medium leading-relaxed">
+            SindhuSwap is designed specifically for Sindhudurg districts. Trade, buy, or swap books locally with verified users nearby.
+          </p>
+
+          <div className="flex flex-col md:flex-row items-stretch justify-between gap-6 md:gap-4 relative w-full">
             {[
               {
                 title: "Browse Items",
                 text: "Explore verified products and swap books from nearby talukas.",
-                icon: FiSearch,
+                icon: Search,
               },
               {
                 title: "Connect",
                 text: "Chat with sellers, ask questions, or send a book swap request.",
-                icon: FiUsers,
+                icon: MessageSquare,
               },
               {
                 title: "Buy or Swap",
                 text: "Meet safely, complete the deal, and support your local community.",
-                icon: FiCheckCircle,
+                icon: Handshake,
               },
-            ].map((step, index) => {
+            ].map((step, index, arr) => {
               const Icon = step.icon;
               return (
-                <motion.article
-                  className="step-card home-step-card"
-                  key={step.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.35, delay: index * 0.08 }}
-                >
-                  <span>{index + 1}</span>
-                  <Icon />
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </motion.article>
+                <Fragment key={step.title}>
+                  <motion.article
+                    className="group relative flex flex-col justify-between p-8 bg-gradient-to-b from-white via-white to-emerald-50/[0.02] border border-slate-100/80 hover:border-emerald-200/50 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.015)] hover:shadow-[0_24px_50px_-12px_rgba(15,23,42,0.08)] flex-1 w-full min-h-[220px] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer overflow-hidden"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.35, delay: index * 0.08 }}
+                  >
+                    {/* Top glow border */}
+                    <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-emerald-400/0 via-emerald-400/30 to-emerald-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="flex items-start justify-between z-10">
+                      <div className="p-3.5 rounded-2xl bg-slate-50 text-slate-500 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-all duration-300 transform group-hover:scale-105">
+                        <Icon className="w-6 h-6 stroke-[1.75]" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-300 group-hover:text-emerald-500/30 transition-colors duration-300">
+                        0{index + 1}
+                      </span>
+                    </div>
+
+                    <div className="mt-8 space-y-2 z-10">
+                      <h3 className="text-lg font-bold text-slate-800 group-hover:text-emerald-600 transition-colors duration-300">
+                        {step.title}
+                      </h3>
+                      <p className="text-sm text-slate-400 font-medium leading-relaxed">
+                        {step.text}
+                      </p>
+                    </div>
+                  </motion.article>
+
+                  {/* Connecting line */}
+                  {index < arr.length - 1 && (
+                    <div className="flex md:flex-row flex-col items-center justify-center my-2 md:my-0">
+                      {/* Vertical line for mobile */}
+                      <div className="w-[2px] h-6 bg-gradient-to-b from-slate-100 to-transparent md:hidden" />
+                      {/* Horizontal line for desktop */}
+                      <div className="hidden md:block w-6 lg:w-10 h-[2px] bg-gradient-to-r from-slate-100 to-emerald-100/50 relative">
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      </div>
+                    </div>
+                  )}
+                </Fragment>
               );
             })}
           </div>
