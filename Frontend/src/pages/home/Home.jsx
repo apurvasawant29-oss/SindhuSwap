@@ -23,6 +23,7 @@ import { useMemo, useState } from "react";
 import PageShell from "../../components/common/PageShell";
 import SectionHeader from "../../components/common/SectionHeader";
 import ProductCard from "../../components/cards/ProductCard";
+import SkeletonCard from "../../components/common/SkeletonCard";
 import fortImage from "../../assets/sindhu.jpg";
 import productImage from "../../assets/sawantwadi.jpg";
 import peopleImage from "../../assets/us.jpeg";
@@ -97,6 +98,7 @@ function FloatingCard({ className, title, value, icon }) {
 function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [loading, setLoading] = useState(false);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -115,14 +117,22 @@ function Home() {
   }, [search, selectedCategory]);
 
   const handleCategoryClick = (categoryName) => {
+    setLoading(true);
     setSelectedCategory(categoryName);
     toast.success(`${categoryName} selected`);
+    setTimeout(() => {
+      setLoading(false);
+    }, 350);
   };
 
   const handleClearFilters = () => {
+    setLoading(true);
     setSearch("");
     setSelectedCategory("All");
     toast.info("Filters cleared");
+    setTimeout(() => {
+      setLoading(false);
+    }, 350);
   };
 
   const handleSearchChange = (e) => {
@@ -288,7 +298,13 @@ function Home() {
           }
         />
 
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <SkeletonCard key={idx} />
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="empty-state">
             <FiSearch size={48} />
             <h3>No products found</h3>

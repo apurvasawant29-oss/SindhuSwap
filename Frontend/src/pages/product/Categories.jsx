@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FiArrowRight,
@@ -71,7 +72,7 @@ function Categories() {
           <h2>Have books to swap?</h2>
           <p>Join our Book Swap community and exchange books you love with others.</p>
         </div>
-        <a className="btn btn--primary" href="/bookswap">Go to Book Swap <FiArrowRight /></a>
+        <Link className="btn btn--primary" to="/bookswap">Go to Book Swap <FiArrowRight /></Link>
       </section>
     </PageShell>
   );
@@ -91,16 +92,18 @@ function CategoryStat({ stat }) {
 function CategoryTile({ category }) {
   const Icon = category.icon;
   return (
-    <motion.a className="category-tile" href={`/categories/${category.name.toLowerCase().replaceAll(" ", "-")}`} whileHover={{ y: -8 }}>
-      <img src={category.image} alt={category.name} />
-      <div>
-        <h3>{category.name}</h3>
-        <strong>{category.count}</strong>
-        <p>{category.text}</p>
-        <span>Explore <FiArrowRight /></span>
-      </div>
-      <Icon />
-    </motion.a>
+    <motion.div whileHover={{ y: -8 }}>
+      <Link className="category-tile block" to={`/categories/${category.name.toLowerCase().replaceAll(" ", "-")}`}>
+        <img src={category.image} alt={category.name} />
+        <div>
+          <h3>{category.name}</h3>
+          <strong>{category.count}</strong>
+          <p>{category.text}</p>
+          <span>Explore <FiArrowRight /></span>
+        </div>
+        <Icon />
+      </Link>
+    </motion.div>
   );
 }
 

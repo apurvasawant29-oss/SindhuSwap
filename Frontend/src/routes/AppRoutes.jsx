@@ -15,6 +15,7 @@ import HelpCenter from "../pages/info/HelpCenter";
 import NotFound from "../pages/NotFound";
 import AddProduct from "../pages/product/AddProduct";
 import Categories from "../pages/product/Categories";
+import CategoryPage from "../pages/product/CategoryPage";
 import ProductDetails from "../pages/product/ProductDetails";
 import Profile from "../pages/profile/Profile";
 import Wishlist from "../pages/profile/Wishlist";
@@ -29,16 +30,19 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signin" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/bookswap" element={<BookSwap />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/categories" element={<Categories />} />
+        <Route path="/categories/:categoryName" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/inbox" element={<Inbox />} />
         <Route path="/chat" element={<Inbox />} />
+        <Route path="/messages" element={<Inbox />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />

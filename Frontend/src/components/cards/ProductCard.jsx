@@ -28,7 +28,7 @@ function ProductCard({ item }) {
     e.preventDefault();
     e.stopPropagation();
     toast.success(`Opening chat with ${item.seller}`);
-    navigate(`/inbox?seller=${encodeURIComponent(item.seller)}`);
+    navigate(`/messages?seller=${encodeURIComponent(item.seller)}`);
   };
 
   const renderStars = (rating = 0) => {

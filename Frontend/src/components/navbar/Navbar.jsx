@@ -85,7 +85,7 @@ function Navbar() {
           <Link to="/notifications" aria-label="Notifications">
             <FiBell />
           </Link>
-          <Link to="/inbox" aria-label="Inbox">
+          <Link to="/messages" aria-label="Messages">
             <FiMessageCircle />
           </Link>
           <Link className="avatar" to="/profile" aria-label="Profile">
