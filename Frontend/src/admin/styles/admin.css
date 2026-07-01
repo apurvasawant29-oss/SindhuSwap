@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--primary);       /* #0f766e */
+  --color-secondary: var(--secondary);   /* #14b8a6 */
+  --color-accent: var(--accent);         /* #f59e0b */
+  --color-dark: var(--dark);             /* #111827 */
+  --color-muted: var(--muted);           /* #667085 */
+  --color-line: var(--line);             /* #e5e7eb */
+  --color-bg-base: var(--background);     /* #f8fafc */
+  
+  --shadow-glass: 0 8px 32px 0 rgba(15, 23, 42, 0.06);
+  --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+}
+
+/* Glassmorphism Panel styles */
+.admin-glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  box-shadow: var(--shadow-glass);
+}
+
+.admin-glass-card-dark {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Custom Scrollbar for Sidebar and Panels */
+.admin-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.admin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(15, 118, 110, 0.15);
+  border-radius: 99px;
+}
+.admin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 118, 110, 0.3);
+}
+
+/* Glass table headers */
+.admin-table-hdr {
+  background: rgba(248, 250, 252, 0.8);
+  backdrop-filter: blur(8px);
+}
