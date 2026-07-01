@@ -5,9 +5,7 @@ import {
   FiCheckCircle,
   FiChevronLeft,
   FiChevronRight,
-  FiCpu,
   FiHeart,
-  FiHome,
   FiMapPin,
   FiRefreshCw,
   FiSearch,
@@ -15,90 +13,26 @@ import {
   FiShoppingBag,
   FiSmartphone,
   FiStar,
-  FiTruck,
   FiUsers,
 } from "react-icons/fi";
-import { FaBicycle, FaLaptop, FaTshirt } from "react-icons/fa";
+import { FaLaptop } from "react-icons/fa";
 import { GiSofa } from "react-icons/gi";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useMemo, useState } from "react";
 import PageShell from "../../components/common/PageShell";
 import SectionHeader from "../../components/common/SectionHeader";
 import ProductCard from "../../components/cards/ProductCard";
 import fortImage from "../../assets/sindhu.jpg";
 import productImage from "../../assets/sawantwadi.jpg";
 import peopleImage from "../../assets/us.jpeg";
+import products from "../../data/products";
+import categories from "../../data/categories";
 
 const reveal = {
   hidden: { opacity: 0, y: 28 },
   visible: { opacity: 1, y: 0 },
 };
-
-const categories = [
-  { name: "Electronics", icon: FiCpu, tone: "mint" },
-  { name: "Furniture", icon: GiSofa, tone: "amber" },
-  { name: "Books", icon: FiBookOpen, tone: "violet" },
-  { name: "Mobiles", icon: FiSmartphone, tone: "sky" },
-  { name: "Bikes", icon: FaBicycle, tone: "rose" },
-  { name: "Fashion", icon: FaTshirt, tone: "pink" },
-  { name: "Sports", icon: FiTruck, tone: "orange" },
-  { name: "Others", icon: FiHome, tone: "slate" },
-];
-
-const listings = [
-  {
-    name: "Dell Inspiron 15",
-    price: "Rs. 22,000",
-    location: "Kopargaon",
-    seller: "Verified seller",
-    condition: "Good",
-    rating: "4.8",
-    image: productImage,
-  },
-  {
-    name: "Royal Enfield Classic 350",
-    price: "Rs. 95,000",
-    location: "Shrirampur",
-    seller: "Local owner",
-    condition: "Excellent",
-    rating: "4.9",
-    image: fortImage,
-  },
-  {
-    name: "Study Table",
-    price: "Rs. 2,500",
-    location: "Nevasa",
-    seller: "Student",
-    condition: "Like new",
-    rating: "4.7",
-    image: peopleImage,
-  },
-  {
-    name: "Let Us C Programming",
-    price: "Swap Now",
-    location: "Sangamner",
-    seller: "Book swapper",
-    condition: "Readable",
-    rating: "4.6",
-    image: productImage,
-  },
-  {
-    name: "3 Seater Sofa",
-    price: "Rs. 8,500",
-    location: "Rahata",
-    seller: "Verified seller",
-    condition: "Good",
-    rating: "4.8",
-    image: fortImage,
-  },
-  {
-    name: "Samsung Galaxy M31",
-    price: "Rs. 7,000",
-    location: "Kopargaon",
-    seller: "Local owner",
-    condition: "Fair",
-    rating: "4.5",
-    image: peopleImage,
-  },
-];
 
 const stats = [
   { value: "1000+", label: "Happy Users", icon: FiUsers },
@@ -127,7 +61,63 @@ const testimonials = [
   { name: "Sneha Sawant", role: "Buyer, Sawantwadi", text: "Clean design, simple search, and I did not have to scroll through unrelated cities.", rating: 5 },
 ];
 
+function FloatingCard({ className, title, value, icon }) {
+  return (
+    <motion.div
+      className={`floating-card ${className}`}
+      animate={{ y: [0, -10, 0] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <span>{icon}</span>
+      <strong>{title}</strong>
+      <small>{value}</small>
+    </motion.div>
+  );
+}
+
 function Home() {
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const query = search.trim().toLowerCase();
+
+      const matchSearch =
+        product.name.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query) ||
+        (product.location || product.taluka || "").toLowerCase().includes(query);
+
+      const matchCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
+
+      return matchSearch && matchCategory;
+    });
+  }, [search, selectedCategory]);
+
+  const handleCategoryClick = (categoryName) => {
+    setSelectedCategory(categoryName);
+    toast.success(`${categoryName} selected`);
+  };
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setSelectedCategory("All");
+    toast.info("Filters cleared");
+  };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    if (e.target.value.trim().length >= 2) {
+      toast.dismiss();
+    }
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    toast.success("Search Completed");
+  };
+
   return (
     <PageShell>
       <section className="hero">
@@ -152,18 +142,63 @@ function Home() {
               Find great deals on second-hand items or swap books with students
               and neighbors across Sindhudurg.
             </p>
+
+            <form className="hero__search" onSubmit={handleSearchSubmit}>
+              <div className="hero__search-bar">
+                <FiSearch />
+                <input
+                  type="text"
+                  placeholder="Search products, books, categories, locations..."
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+                {search && (
+                  <button
+                    type="button"
+                    className="hero__search-clear"
+                    onClick={() => {
+                      setSearch("");
+                      toast.info("Search cleared");
+                    }}
+                    aria-label="Clear search"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <motion.button
+                type="submit"
+                className="hero__search-btn"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                Search
+              </motion.button>
+            </form>
+
             <div className="hero__buttons">
-              <a className="btn btn--primary" href="/categories">
-                <FiShoppingBag /> Explore Items
-              </a>
-              <a className="btn btn--light" href="/bookswap">
-                <FiRefreshCw /> Book Swap
-              </a>
+              <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+                <Link className="btn btn--primary" to="/categories">
+                  <FiShoppingBag /> Explore Items
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+                <Link className="btn btn--light" to="/bookswap">
+                  <FiRefreshCw /> Book Swap
+                </Link>
+              </motion.div>
             </div>
+
             <div className="trust-row">
-              <span><FiUsers /> Local Community</span>
-              <span><FiShield /> Trusted Sellers</span>
-              <span><FiCheckCircle /> Secure Marketplace</span>
+              <span>
+                <FiUsers /> Local Community
+              </span>
+              <span>
+                <FiShield /> Trusted Sellers
+              </span>
+              <span>
+                <FiCheckCircle /> Secure Marketplace
+              </span>
             </div>
           </motion.div>
 
@@ -188,37 +223,76 @@ function Home() {
       </section>
 
       <section className="category-strip container" aria-label="Popular categories">
+        <motion.button
+          type="button"
+          className={`category-card category-card--all ${selectedCategory === "All" ? "active" : ""}`}
+          onClick={handleClearFilters}
+          whileHover={{ y: -6, scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+        >
+          <FiShoppingBag />
+          <span>All</span>
+        </motion.button>
+
         {categories.map((category) => {
           const Icon = category.icon;
+          const isActive = selectedCategory === category.name;
+
           return (
-            <motion.a
-              href="/categories"
-              className={`category-card category-card--${category.tone}`}
+            <motion.button
+              type="button"
               key={category.name}
+              className={`category-card category-card--${category.tone} ${isActive ? "active" : ""}`}
+              onClick={() => handleCategoryClick(category.name)}
               whileHover={{ y: -6, scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
             >
               <Icon />
               <span>{category.name}</span>
-            </motion.a>
+            </motion.button>
           );
         })}
       </section>
 
       <section className="section container featured-home-section">
         <SectionHeader
-          title="Featured Listings"
+          title={selectedCategory === "All" ? "Featured Listings" : `${selectedCategory} Products`}
           action={
             <div className="pager">
-              <button aria-label="Previous listing"><FiChevronLeft /></button>
-              <button aria-label="Next listing"><FiChevronRight /></button>
+              <button type="button" aria-label="Previous listing">
+                <FiChevronLeft />
+              </button>
+              <button type="button" aria-label="Next listing">
+                <FiChevronRight />
+              </button>
             </div>
           }
         />
-        <div className="product-grid">
-          {listings.map((item) => (
-            <ProductCard item={item} key={item.name} />
-          ))}
-        </div>
+
+        {filteredProducts.length === 0 ? (
+          <div className="empty-state">
+            <FiSearch size={48} />
+            <h3>No products found</h3>
+            <p>Try adjusting your search or selecting a different category.</p>
+            <button type="button" className="btn btn--dark" onClick={handleClearFilters}>
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <div className="product-grid">
+            {filteredProducts.map((item) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.35 }}
+              >
+                <ProductCard item={item} />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
       <motion.section
@@ -232,31 +306,59 @@ function Home() {
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <article className="stat-card" key={stat.label}>
+              <motion.article
+                className="stat-card"
+                key={stat.label}
+                initial={{ scale: 0.9, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.45 }}
+              >
                 <Icon />
                 <strong>{stat.value}</strong>
                 <span>{stat.label}</span>
-              </article>
+              </motion.article>
             );
           })}
         </div>
+
         <div className="work-panel home-how-panel">
           <SectionHeader eyebrow="Simple local flow" title="How It Works?" />
           <div className="steps home-steps">
             {[
-              { title: "Browse Items", text: "Explore verified products and swap books from nearby talukas.", icon: FiSearch },
-              { title: "Connect", text: "Chat with sellers, ask questions, or send a book swap request.", icon: FiUsers },
-              { title: "Buy or Swap", text: "Meet safely, complete the deal, and support your local community.", icon: FiCheckCircle },
+              {
+                title: "Browse Items",
+                text: "Explore verified products and swap books from nearby talukas.",
+                icon: FiSearch,
+              },
+              {
+                title: "Connect",
+                text: "Chat with sellers, ask questions, or send a book swap request.",
+                icon: FiUsers,
+              },
+              {
+                title: "Buy or Swap",
+                text: "Meet safely, complete the deal, and support your local community.",
+                icon: FiCheckCircle,
+              },
             ].map((step, index) => {
               const Icon = step.icon;
               return (
-              <article className="step-card home-step-card" key={step.title}>
-                <span>{index + 1}</span>
-                <Icon />
-                <h3>{step.title}</h3>
-                <p>{step.text}</p>
-              </article>
-            )})}
+                <motion.article
+                  className="step-card home-step-card"
+                  key={step.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.35, delay: index * 0.08 }}
+                >
+                  <span>{index + 1}</span>
+                  <Icon />
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </motion.article>
+              );
+            })}
           </div>
         </div>
       </motion.section>
@@ -267,7 +369,15 @@ function Home() {
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
-              <motion.article className="feature-card" key={feature.title} whileHover={{ y: -6 }}>
+              <motion.article
+                className="feature-card"
+                key={feature.title}
+                whileHover={{ y: -8 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.35 }}
+              >
                 <Icon />
                 <h3>{feature.title}</h3>
                 <p>{feature.text}</p>
@@ -281,16 +391,24 @@ function Home() {
         <SectionHeader title="Latest Community Updates" />
         <div className="update-grid">
           {updates.map((update) => (
-            <article className="update-card" key={update.title}>
+            <motion.article
+              className="update-card"
+              key={update.title}
+              whileHover={{ y: -6 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.35 }}
+            >
               <img src={update.image} alt="" />
               <div>
                 <span>{update.label}</span>
                 <h3>{update.title}</h3>
-                <a href="/">
+                <Link to="/blog">
                   Read More <FiArrowRight />
-                </a>
+                </Link>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </section>
@@ -300,51 +418,57 @@ function Home() {
           <SectionHeader eyebrow="Community voices" title="Loved by Local Users" />
           <div className="testimonial-grid">
             {testimonials.map((person) => (
-              <article className="testimonial-card" key={person.name}>
+              <motion.article
+                className="testimonial-card"
+                key={person.name}
+                initial={{ opacity: 0, scale: 0.96 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.35 }}
+              >
                 <div className="stars">
-                  {Array.from({ length: person.rating }).map((_, index) => (
-                    <FiStar key={index} />
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <FiStar
+                      key={index}
+                      className={index < person.rating ? "star--filled" : "star--empty"}
+                    />
                   ))}
                 </div>
-                <p>"{person.text}"</p>
+                <p>&ldquo;{person.text}&rdquo;</p>
                 <div className="testimonial-card__user">
-                  <span>{person.name.charAt(0)}</span>
+                  <motion.span whileHover={{ scale: 1.08 }}>
+                    {person.name.charAt(0)}
+                  </motion.span>
                   <div>
                     <strong>{person.name}</strong>
                     <small>{person.role}</small>
                   </div>
                 </div>
-              </article>
+              </motion.article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="cta container">
+      <motion.section
+        className="cta container"
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.45 }}
+      >
         <div>
           <span className="eyebrow">Ready to Buy or Swap?</span>
           <h2>Join SindhuSwap Today.</h2>
           <p>Start with your taluka, discover nearby listings, and keep useful items moving.</p>
         </div>
-        <a className="btn btn--dark" href="/signup">
-          Get Started <FiArrowRight />
-        </a>
-      </section>
+        <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
+          <Link className="btn btn--dark" to="/signup">
+            Get Started <FiArrowRight />
+          </Link>
+        </motion.div>
+      </motion.section>
     </PageShell>
-  );
-}
-
-function FloatingCard({ className, title, value, icon }) {
-  return (
-    <motion.div
-      className={`floating-card ${className}`}
-      animate={{ y: [0, -10, 0] }}
-      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <span>{icon}</span>
-      <strong>{title}</strong>
-      <small>{value}</small>
-    </motion.div>
   );
 }
 
