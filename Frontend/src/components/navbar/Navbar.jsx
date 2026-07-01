@@ -11,6 +11,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import Logo from "../common/Logo";
+import SearchBar from "./SearchBar";
 
 const navLinks = [
   { label: "Categories", to: "/categories", hasChevron: true },
@@ -33,25 +34,49 @@ function Navbar() {
       <div className="navbar__inner">
         <Logo />
 
-        <form className="navbar__search" role="search">
-          <input
-            aria-label="Search products, books, and categories"
-            placeholder="Search for products, books, categories..."
-            type="search"
-          />
-          <button type="submit" aria-label="Search">
-            <FiSearch />
-          </button>
-        </form>
+        <SearchBar />
 
         <nav className="navbar__links" aria-label="Primary navigation">
-          {navLinks.map((link) => (
-            <NavLink key={link.label} to={link.to}>
-              {link.label}
-              {link.hasChevron && <FiChevronDown aria-hidden="true" />}
-            </NavLink>
-          ))}
-        </nav>
+  {navLinks.map((link) => (
+    <NavLink
+      key={link.label}
+      to={link.to}
+      className={({ isActive }) =>
+        `relative flex items-center gap-1 px-1 py-2 text-sm font-medium
+        transition-all duration-300 ease-in-out
+        ${
+          isActive
+            ? "text-emerald-600"
+            : "text-slate-700 hover:text-emerald-600"
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <span>{link.label}</span>
+
+          {link.hasChevron && (
+            <FiChevronDown
+              className={`transition-transform duration-300 ${
+                isActive ? "rotate-180 text-emerald-600" : ""
+              }`}
+            />
+          )}
+
+          <span
+            className={`absolute -bottom-1 left-0 h-[3px] rounded-full bg-emerald-500
+            transition-all duration-300 ease-out
+            ${
+              isActive
+                ? "w-full opacity-100"
+                : "w-0 opacity-0"
+            }`}
+          />
+        </>
+      )}
+    </NavLink>
+  ))}
+</nav>
 
         <div className="navbar__actions">
           <Link to="/wishlist" aria-label="Wishlist">
@@ -87,10 +112,23 @@ function Navbar() {
           exit={{ height: 0, opacity: 0 }}
         >
           {navLinks.map((link) => (
-            <NavLink key={link.label} to={link.to} onClick={() => setIsOpen(false)}>
-              {link.label}
-            </NavLink>
-          ))}
+  <NavLink
+    key={link.label}
+    to={link.to}
+    onClick={() => setIsOpen(false)}
+    className={({ isActive }) =>
+      `block rounded-xl px-4 py-3 text-sm font-medium
+      transition-all duration-300
+      ${
+        isActive
+          ? "bg-emerald-50 text-emerald-600"
+          : "text-slate-700 hover:bg-slate-50 hover:text-emerald-600"
+      }`
+    }
+  >
+    {link.label}
+  </NavLink>
+))}
           <Link to="/wishlist" onClick={() => setIsOpen(false)}>
             Wishlist
           </Link>

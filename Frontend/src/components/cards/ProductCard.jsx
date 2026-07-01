@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
-import { FiHeart, FiStar, FiMapPin, FiEye } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { FiHeart, FiStar, FiMapPin, FiMessageCircle, FiEye } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState } from "react";
 
 function ProductCard({ item }) {
   const [wishlisted, setWishlisted] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const navigate = useNavigate();
 
   const handleWishlist = (e) => {
     e.preventDefault();
@@ -14,9 +15,20 @@ function ProductCard({ item }) {
 
     setWishlisted((prev) => {
       const next = !prev;
-      toast(next ? "Wishlist Added" : "Product Removed");
+      if (next) {
+        toast.success("Added to Wishlist");
+      } else {
+        toast.info("Removed from Wishlist");
+      }
       return next;
     });
+  };
+
+  const handleChatClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toast.success(`Opening chat with ${item.seller}`);
+    navigate(`/inbox?seller=${encodeURIComponent(item.seller)}`);
   };
 
   const renderStars = (rating = 0) => {
@@ -24,33 +36,35 @@ function ProductCard({ item }) {
     return Array.from({ length: 5 }).map((_, index) => (
       <FiStar
         key={index}
-        className={`h-3.5 w-3.5 ${
-          index < fullStars ? "fill-[#D4A017] text-[#D4A017]" : "text-[#E9DFCC]"
+        className={`h-3 w-3 ${
+          index < fullStars ? "fill-amber-500 text-amber-500" : "text-slate-200"
         }`}
       />
     ));
   };
 
-  // Dummy fallback image for testing when item.image is missing/broken
   const dummyImage = `https://picsum.photos/seed/${item.id || item.name}/420/320`;
-  const imageSrc = item.image || dummyImage;
+  const imageSrc = item.image 
+    ? (item.image.startsWith("http") || item.image.includes(".png") || item.image.includes(".jpg")
+        ? (item.image.includes("/") ? item.image : `/src/assets/${item.image}`) 
+        : dummyImage)
+    : dummyImage;
   const isSwap = item.status === "Swap" || item.price === undefined;
 
   return (
     <motion.article
-      className="group relative overflow-hidden rounded-[18px] bg-white ring-1 ring-[#E9DFCC] transition-all duration-300"
-      style={{ boxShadow: "0 1px 3px rgba(43,36,32,0.06)" }}
+      className="group relative flex flex-col h-full overflow-hidden rounded-2xl bg-white border border-slate-200/90 shadow-[0_4px_20px_rgba(15,23,42,0.02)] hover:shadow-[0_20px_40px_rgba(15,23,42,0.08)] transition-all duration-300 ease-out"
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.15 }}
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <Link to={`/product/${item.id}`} className="block">
-        {/* Image */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#EFE6D3]">
+      <Link to={`/product/${item.id}`} className="flex flex-col h-full">
+        {/* Image Section */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
           {!imgLoaded && (
-            <div className="absolute inset-0 animate-pulse bg-[#EFE6D3]" />
+            <div className="absolute inset-0 animate-pulse bg-slate-100/80" />
           )}
 
           <motion.img
@@ -62,110 +76,122 @@ function ProductCard({ item }) {
             alt={item.name}
             onLoad={() => setImgLoaded(true)}
             loading="lazy"
-            className={`h-full w-full object-cover transition-opacity duration-500 ${
-              imgLoaded ? "opacity-100" : "opacity-0"
+            className={`h-full w-full object-cover transition-all duration-500 ${
+              imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
             }`}
-            whileHover={{ scale: 1.07 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            whileHover={{ scale: 1.06 }}
+            transition={{ duration: 0.4 }}
           />
 
-          {/* Bottom gradient, only visible on hover */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-slate-900/0 to-slate-900/10 opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
 
-          {/* Wishlist button */}
+          {/* Favorite button */}
           <button
             type="button"
             onClick={handleWishlist}
             aria-label="Add to wishlist"
-            className={`absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full backdrop-blur transition-colors duration-200 ${
+            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full shadow-md backdrop-blur-md transition-all duration-200 active:scale-90 ${
               wishlisted
-                ? "bg-[#C1502E] text-white"
-                : "bg-white/95 text-[#8a7a5c] hover:text-[#C1502E]"
+                ? "bg-rose-500 text-white"
+                : "bg-white/90 text-slate-500 hover:text-rose-500 hover:bg-white"
             }`}
           >
-            <FiHeart className={wishlisted ? "fill-white" : ""} />
+            <FiHeart className={`h-4.5 w-4.5 ${wishlisted ? "fill-white" : ""}`} />
           </button>
 
-          {/* Featured / Swap badge */}
-          {item.featured && !isSwap && (
-            <span className="absolute left-2.5 top-2.5 rounded-full bg-[#0F6E56] px-2.5 py-1 text-[10px] font-medium tracking-wide text-white shadow-sm">
-              Featured
-            </span>
-          )}
-          {isSwap && (
-            <span className="absolute left-2.5 top-2.5 rounded-full bg-[#D4A017] px-2.5 py-1 text-[10px] font-medium tracking-wide text-white shadow-sm">
-              Swap only
-            </span>
-          )}
+          {/* Category Badge */}
+          <span className="absolute left-3 top-3 rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-teal-700 shadow-sm">
+            {item.category}
+          </span>
 
-          {/* Posted time, revealed on hover */}
-          {item.postedAt && (
-            <span className="absolute bottom-2.5 left-2.5 rounded-md bg-black/45 px-2 py-0.5 text-[10px] font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
-              {item.postedAt}
-            </span>
-          )}
+          {/* Status Badge */}
+          <span className={`absolute left-3 bottom-3 rounded-md px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm backdrop-blur-sm ${
+            isSwap ? "bg-amber-500/90" : "bg-teal-600/90"
+          }`}>
+            {item.status || "Available"}
+          </span>
         </div>
 
-        {/* Content */}
-        <div className="space-y-2 p-3.5">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="rounded-full bg-[#C1502E]/10 px-2 py-0.5 font-medium text-[#8f3a1f]">
-              {item.category}
-            </span>
-            <span className="flex items-center gap-1 font-medium text-[#0F6E56]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#0F6E56]" />
-              {item.status || "Available"}
-            </span>
-          </div>
-
-          <h3 className="line-clamp-1 text-[15px] font-semibold leading-snug text-[#2b2420]">
-            {item.name}
-          </h3>
-
-          <div className="flex items-center gap-1 text-[11px] text-[#9c8f76]">
-            <FiMapPin className="h-3 w-3" />
-            {item.location || item.taluka}
-            {item.distance && <span>&nbsp;· {item.distance} away</span>}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-0.5 text-[#D4A017] text-xs">
-              {renderStars(item.rating)}
-              <small className="ml-1 text-[10px] text-[#9c8f76]">
-                {item.rating}
-                {item.reviewCount ? ` (${item.reviewCount})` : ""}
-              </small>
-            </div>
-            {item.condition && (
-              <span className="rounded bg-[#EFE6D3] px-1.5 py-0.5 text-[10px] font-medium text-[#6b5f4a]">
-                {item.condition}
+        {/* Card Body */}
+        <div className="flex flex-col flex-1 p-4">
+          
+          {/* Seller profile bar */}
+          <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2.5">
+            <div className="flex items-center gap-2">
+              <div className="w-6.5 h-6.5 rounded-full bg-gradient-to-br from-teal-600 to-amber-400 text-white flex items-center justify-center text-[10px] font-extrabold shadow-sm">
+                {(item.seller || "S").charAt(0).toUpperCase()}
+              </div>
+              <span className="text-[11px] font-bold text-slate-700 truncate max-w-[80px]">
+                {item.seller || "Seller"}
               </span>
-            )}
+            </div>
+            
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+              <FiMapPin className="h-3 w-3 text-teal-600" />
+              <span>{item.location || "Sindhudurg"}</span>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-[#EFE6D3] pt-2.5">
-            <div>
-              {isSwap ? (
-                <strong className="text-[17px] font-bold text-[#0F6E56]">Swap</strong>
-              ) : (
+          {/* Title & Rating */}
+          <div className="space-y-1 mb-2.5">
+            <h3 className="line-clamp-1 text-sm font-bold text-slate-800 group-hover:text-teal-700 transition-colors leading-tight">
+              {item.name}
+            </h3>
+
+            <div className="flex items-center gap-1 text-[10px] text-slate-400">
+              <div className="flex items-center gap-0.5">
+                {renderStars(item.rating)}
+              </div>
+              <span>({item.rating || "4.5"})</span>
+              {item.condition && (
                 <>
-                  <strong className="text-[17px] font-bold text-[#2b2420]">
-                    Rs. {item.price}
-                  </strong>
-                  {item.negotiable && (
-                    <span className="ml-1 text-[10px] text-[#9c8f76]">negotiable</span>
-                  )}
+                  <span>·</span>
+                  <span className="text-[10px] text-teal-600 font-semibold uppercase">{item.condition}</span>
                 </>
               )}
             </div>
-            <motion.span
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.96 }}
-              className="flex items-center gap-1 rounded-full bg-[#2b2420] px-3 py-1.5 text-[11px] font-medium text-white transition-colors duration-200 group-hover:bg-[#C1502E]"
-            >
-              View <FiEye className="h-3.5 w-3.5" />
-            </motion.span>
           </div>
+
+          {/* Footer & Actions */}
+          <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+            {/* Price */}
+            <div>
+              {isSwap ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-extrabold text-amber-600">Swap</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Item</span>
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  <span className="text-sm font-extrabold text-slate-900 leading-none">
+                    Rs. {item.price.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-[9px] text-slate-400 mt-0.5">Negotiable</span>
+                </div>
+              )}
+            </div>
+
+            {/* Quick action buttons */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleChatClick}
+                className="flex h-7.5 w-7.5 items-center justify-center rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-600 transition-colors duration-200"
+                title={`Chat with ${item.seller}`}
+              >
+                <FiMessageCircle className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                className="flex items-center gap-1 rounded-lg bg-slate-900 hover:bg-teal-600 text-white px-2.5 py-1 text-[11px] font-bold transition-all duration-300"
+              >
+                <span>View</span>
+                <FiEye className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+
         </div>
       </Link>
     </motion.article>

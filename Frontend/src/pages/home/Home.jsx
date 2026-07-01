@@ -34,6 +34,25 @@ const reveal = {
   visible: { opacity: 1, y: 0 },
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: "easeOut" },
+  },
+};
+
 const stats = [
   { value: "1000+", label: "Happy Users", icon: FiUsers },
   { value: "500+", label: "Items Listed", icon: FiShoppingBag },
@@ -279,19 +298,23 @@ function Home() {
             </button>
           </div>
         ) : (
-          <div className="product-grid">
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+          >
             {filteredProducts.map((item) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.35 }}
+                variants={itemVariants}
+                className="h-full"
               >
                 <ProductCard item={item} />
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </section>
 

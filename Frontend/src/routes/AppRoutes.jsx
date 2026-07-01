@@ -18,6 +18,8 @@ import Categories from "../pages/product/Categories";
 import ProductDetails from "../pages/product/ProductDetails";
 import Profile from "../pages/profile/Profile";
 import Wishlist from "../pages/profile/Wishlist";
+import Notifications from "../pages/notifications/Notifications";
+import Inbox from "../pages/chat/Inbox";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 
@@ -34,6 +36,9 @@ function AppRoutes() {
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/inbox" element={<Inbox />} />
+        <Route path="/chat" element={<Inbox />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
