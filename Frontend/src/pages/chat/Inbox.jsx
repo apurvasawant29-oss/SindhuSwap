@@ -16,150 +16,75 @@ import EmptyChat from "./components/EmptyChat";
 import ProductInfoCard from "./components/ProductInfoCard";
 import QuickReplies from "./components/QuickReplies";
 
-const INITIAL_CONVERSATIONS = [
-  {
-    id: "priya",
-    name: "Priya",
-    avatar: priyaAvatar,
-    isOnline: true,
-    lastSeen: "Online",
-    unreadCount: 2,
-    productName: "Engineering Mathematics",
-    productImage: bookImage,
-    product: {
-      id: 1,
-      name: "Engineering Mathematics",
-      owner: "Priya",
-      condition: "Like New",
-      swapStatus: "Pending",
-      image: bookImage,
-    },
-    messages: [
-      { id: 1, sender: "them", text: "Hi, is the swap still available?", time: "10:18 AM", dateGroup: "Today", status: "read" },
-      { id: 2, sender: "me", text: "Yes, I can swap it for a DSA or DBMS book.", time: "10:23 AM", dateGroup: "Today", status: "delivered" },
-      { id: 3, sender: "them", text: "Great. Mine is like new and has all solved examples.", time: "10:35 AM", dateGroup: "Today", status: "read" },
-      { id: 4, sender: "them", text: "Can we meet near the campus library?", time: "10:42 AM", dateGroup: "Today", status: "read" },
-    ],
-  },
-  {
-    id: "shweta",
-    name: "Shweta",
-    avatar: shwetaAvatar,
-    isOnline: false,
-    lastSeen: "Last seen 2 hours ago",
-    unreadCount: 0,
-    productName: "Study Table",
-    productImage: chairImage,
-    product: {
-      id: 3,
-      name: "Study Table",
-      owner: "Shweta",
-      condition: "Good",
-      swapStatus: "Pending",
-      image: chairImage,
-    },
-    messages: [
-      { id: 1, sender: "them", text: "Is the study table negotiable?", time: "Yesterday, 6:30 PM", dateGroup: "Yesterday", status: "read" },
-      { id: 2, sender: "me", text: "A swap with a wooden chair works for me.", time: "Yesterday, 6:34 PM", dateGroup: "Yesterday", status: "read" },
-    ],
-  },
-  {
-    id: "rahul",
-    name: "Rahul",
-    avatar: null,
-    isOnline: true,
-    lastSeen: "Online",
-    unreadCount: 0,
-    productName: "Dell Inspiron 15",
-    productImage: laptopImage,
-    product: {
-      id: 2,
-      name: "Dell Inspiron 15",
-      owner: "Rahul",
-      condition: "Excellent",
-      swapStatus: "Pending",
-      image: laptopImage,
-    },
-    messages: [
-      { id: 1, sender: "them", text: "I can share more photos of the laptop.", time: "Monday, 4:10 PM", dateGroup: "Monday", status: "read" },
-      { id: 2, sender: "me", text: "Please send the keyboard and charger pictures too.", time: "Monday, 4:18 PM", dateGroup: "Monday", status: "read" },
-      { id: 3, sender: "them", text: "Here is one photo from today.", time: "Monday, 4:24 PM", dateGroup: "Monday", type: "image", mediaUrl: laptopImage, status: "read" },
-    ],
-  },
-  {
-    id: "appu",
-    name: "Appu",
-    avatar: appuAvatar,
-    isOnline: true,
-    lastSeen: "Online",
-    unreadCount: 1,
-    productName: "iPhone 12",
-    productImage: laptopImage,
-    product: {
-      id: 4,
-      name: "iPhone 12",
-      owner: "Appu",
-      condition: "Very Good",
-      swapStatus: "Pending",
-      image: laptopImage,
-    },
-    messages: [
-      { id: 1, sender: "them", text: "Can we meet near Sawantwadi Lake?", time: "9:30 AM", dateGroup: "Today", type: "location", locationName: "Sawantwadi Lake", status: "read" },
-    ],
-  },
-  {
-    id: "sneha",
-    name: "Sneha",
-    avatar: null,
-    isOnline: false,
-    lastSeen: "Last seen yesterday",
-    unreadCount: 0,
-    productName: "DSA Book",
-    productImage: bookImage,
-    product: {
-      id: 5,
-      name: "DSA Book",
-      owner: "Sneha",
-      condition: "Like New",
-      swapStatus: "Pending",
-      image: bookImage,
-    },
-    messages: [
-      { id: 1, sender: "me", text: "Is the DSA Book available for a book swap?", time: "Monday, 11:05 AM", dateGroup: "Monday", status: "read" },
-      { id: 2, sender: "them", text: "Yes, I am looking for Engineering Mathematics.", time: "Monday, 11:17 AM", dateGroup: "Monday", status: "read" },
-    ],
-  },
-  {
-    id: "cycle",
-    name: "Nikhil",
-    avatar: null,
-    isOnline: false,
-    lastSeen: "Last seen 4 hours ago",
-    unreadCount: 0,
-    productName: "Cycle",
-    productImage: chairImage,
-    product: {
-      id: 6,
-      name: "Cycle",
-      owner: "Nikhil",
-      condition: "Good",
-      swapStatus: "Pending",
-      image: chairImage,
-    },
-    messages: [
-      { id: 1, sender: "them", text: "The cycle is available after 5 PM.", time: "Yesterday, 8:15 PM", dateGroup: "Yesterday", status: "read" },
-    ],
-  },
-];
+import { messageApi } from "../../api/messageApi";
+import { useAuth } from "../../context/AuthContext";
 
 function Inbox() {
-  const [conversations, setConversations] = useState(INITIAL_CONVERSATIONS);
-  const [selectedId, setSelectedId] = useState(INITIAL_CONVERSATIONS[0].id);
+  const [conversations, setConversations] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileView, setMobileView] = useState("list");
   const [isTyping, setIsTyping] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [activeCall, setActiveCall] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const res = await messageApi.getContacts();
+        const apiContacts = res.data?.contacts || [];
+        const mapped = apiContacts.map(c => ({
+          id: c._id,
+          name: c.name,
+          avatar: c.profileImage,
+          isOnline: false,
+          lastSeen: "Offline",
+          unreadCount: c.unread,
+          productName: "General Chat", // Adjust based on your schema
+          productImage: null,
+          product: null,
+          messages: []
+        }));
+        setConversations(mapped);
+        if (mapped.length > 0) {
+          setSelectedId(mapped[0].id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch contacts", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContacts();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const fetchMessages = async () => {
+      try {
+        const res = await messageApi.getMessages(selectedId);
+        const apiMsgs = res.data?.messages || [];
+        const formattedMsgs = apiMsgs.map(m => ({
+          id: m._id,
+          sender: m.sender === user?._id || m.sender === user?.id ? "me" : "them",
+          text: m.content,
+          type: "text",
+          time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          dateGroup: new Date(m.createdAt).toLocaleDateString(),
+          status: m.read ? "read" : "delivered"
+        }));
+        
+        setConversations(prev => prev.map(chat => 
+          chat.id === selectedId ? { ...chat, messages: formattedMsgs, unreadCount: 0 } : chat
+        ));
+      } catch (err) {
+        console.error("Failed to load messages", err);
+      }
+    };
+    fetchMessages();
+  }, [selectedId, user]);
 
   const activeChat = conversations.find((chat) => chat.id === selectedId);
 
@@ -205,49 +130,42 @@ function Inbox() {
     );
   };
 
-  const sendMessage = (text, type = "text", mediaUrl = null, locationName = null) => {
+  const sendMessage = async (text, type = "text", mediaUrl = null, locationName = null) => {
     if (!activeChat || !text.trim()) return;
 
-    const message = {
-      id: Date.now(),
-      sender: "me",
-      text,
-      type,
-      mediaUrl,
-      locationName,
-      dateGroup: "Today",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      status: "delivered",
-    };
+    try {
+      setIsTyping(true);
+      const res = await messageApi.sendMessage({
+        receiverId: activeChat.id,
+        content: text
+      });
+      const newMsg = res.data?.message;
+      if (!newMsg) return;
 
-    setConversations((prev) =>
-      prev.map((chat) =>
-        chat.id === activeChat.id
-          ? { ...chat, messages: [...chat.messages, message] }
-          : chat
-      )
-    );
-
-    setIsTyping(true);
-    window.setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        sender: "them",
-        text: "Sounds good. I will confirm the exact time shortly.",
-        dateGroup: "Today",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        status: "read",
+      const message = {
+        id: newMsg._id,
+        sender: "me",
+        text: newMsg.content,
+        type,
+        mediaUrl,
+        locationName,
+        dateGroup: new Date(newMsg.createdAt).toLocaleDateString(),
+        time: new Date(newMsg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        status: "delivered",
       };
 
       setConversations((prev) =>
         prev.map((chat) =>
           chat.id === activeChat.id
-            ? { ...chat, messages: [...chat.messages, reply] }
+            ? { ...chat, messages: [...chat.messages, message], lastSeen: text }
             : chat
         )
       );
+    } catch (err) {
+      console.error("Failed to send message", err);
+    } finally {
       setIsTyping(false);
-    }, 1300);
+    }
   };
 
   const clearChat = () => {

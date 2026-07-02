@@ -11,9 +11,8 @@ import {
   FiShoppingBag,
   FiTag,
 } from "react-icons/fi";
-import products from "../../data/products";
-import categories from "../../data/categories";
-import users from "../../data/users";
+import { productApi } from "../../api/productApi";
+import { adminApi } from "../../api/adminApi";
 
 const TRENDING_SEARCHES = ["iPhone 12", "Laptops", "Engineering Mathematics", "Study Table", "Sony Headphones"];
 
@@ -79,46 +78,37 @@ function SearchBar() {
     setLoading(true);
     setActiveIndex(-1);
 
-    // Mock debounced API / filtering delay
-    const delayDebounce = setTimeout(() => {
-      const searchTerm = query.toLowerCase().trim();
+    // Fetch from API
+    const delayDebounce = setTimeout(async () => {
+      const searchTerm = query.trim();
 
-      // 1. Match Categories
-      const matchedCategories = categories
-        .filter((cat) => cat.name.toLowerCase().includes(searchTerm))
-        .slice(0, 3);
-
-      // 2. Match Users
-      const matchedUsers = users
-        .filter((usr) => usr.name.toLowerCase().includes(searchTerm))
-        .slice(0, 3);
-
-      // 3. Match Products & Books
-      const matchedBooks = [];
-      const matchedProducts = [];
-
-      products.forEach((prod) => {
-        const matchesName = prod.name.toLowerCase().includes(searchTerm);
-        const matchesCat = prod.category.toLowerCase().includes(searchTerm);
-        const matchesLoc = (prod.location || "").toLowerCase().includes(searchTerm);
+      try {
+        const response = await productApi.list({ search: searchTerm, limit: 6 });
+        const results = response.data?.products || [];
         
-        if (matchesName || matchesCat || matchesLoc) {
-          if (prod.category.toLowerCase() === "books" || prod.status === "Swap") {
+        const matchedBooks = [];
+        const matchedProducts = [];
+
+        results.forEach((prod) => {
+          if (prod.category === "Books" || prod.productType === "Swap") {
             matchedBooks.push(prod);
           } else {
             matchedProducts.push(prod);
           }
-        }
-      });
+        });
 
-      setSuggestions({
-        categories: matchedCategories,
-        users: matchedUsers,
-        books: matchedBooks.slice(0, 4),
-        products: matchedProducts.slice(0, 4),
-      });
-      setLoading(false);
-    }, 250);
+        setSuggestions({
+          categories: [], // Omit or fetch via adminApi.categories() if really needed
+          users: [], // Omit or fetch users if needed
+          books: matchedBooks,
+          products: matchedProducts,
+        });
+      } catch (err) {
+        console.error("Search failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    }, 400);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);

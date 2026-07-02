@@ -38,7 +38,7 @@ import SkeletonCard from "../../components/common/SkeletonCard";
 import fortImage from "../../assets/sindhu.jpg";
 import productImage from "../../assets/sawantwadi.jpg";
 import peopleImage from "../../assets/us.jpeg";
-import products from "../../data/products";
+import { productApi } from "../../api/productApi";
 import categories from "../../data/categories";
 
 const reveal = {
@@ -110,9 +110,25 @@ function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(false);
+  const [apiProducts, setApiProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await productApi.list({ limit: 100 });
+        setApiProducts(res.data?.products || []);
+      } catch (err) {
+        console.error("Failed to load products for homepage", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return apiProducts.filter((product) => {
       const query = search.trim().toLowerCase();
 
       const matchSearch =
@@ -125,7 +141,7 @@ function Home() {
 
       return matchSearch && matchCategory;
     });
-  }, [search, selectedCategory]);
+  }, [search, selectedCategory, apiProducts]);
 
   const [[page, direction], setPage] = useState([0, 0]);
   const [visibleCards, setVisibleCards] = useState(4);

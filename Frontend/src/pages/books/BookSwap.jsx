@@ -20,7 +20,7 @@ import bookCover from "../../assets/images/book-cover.jpg";
 import communityImage from "../../assets/images/community.jpg";
 import teamMember from "../../assets/images/team-member.jpg";
 import { productApi } from "../../api/productApi";
-import { wishlistApi } from "../../api/wishlistApi";
+import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
 
 const benefits = [
@@ -194,13 +194,39 @@ function MiniFeature({ item }) {
   );
 }
 
-function BookCard({ book, onSelect }) {
+function BookCard({ book, onSelect, isAuthenticated }) {
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const wishlisted = isInWishlist(book.id || book._id);
+  const navigate = useNavigate();
+
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.info("Please login to save this item.");
+      navigate("/login");
+      return;
+    }
+
+    if (wishlisted) {
+      await removeFromWishlist(book.id || book._id);
+    } else {
+      await addToWishlist(book);
+    }
+  };
+
   return (
-    <motion.article className="book-card book-card--premium" whileHover={{ y: -8 }}>
+    <motion.article className="book-card group" whileHover={{ y: -6 }}>
       <div className="book-card__cover">
         <img src={book.image || book.images?.[0]?.url || ""} alt={`${book.title} cover`} />
         <span>{book.status || "Available"}</span>
-        <button aria-label={`Save ${book.title}`} type="button"><FiHeart /></button>
+        <button 
+          aria-label={`Save ${book.title}`} 
+          type="button" 
+          onClick={handleWishlist}
+          className={wishlisted ? "text-red-500" : ""}
+        >
+          <FiHeart className={wishlisted ? "fill-current" : ""} />
+        </button>
       </div>
       <div className="book-card__body">
         <h3>{book.title}</h3>
@@ -215,8 +241,9 @@ function BookCard({ book, onSelect }) {
 
 function BookDetailModal({ book, onClose, isAuthenticated }) {
   const [loading, setLoading] = useState(false);
-  const [wishlisted, setWishlisted] = useState(false);
   const navigate = useNavigate();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const wishlisted = isInWishlist(book.id || book._id);
 
   const handleSwapRequest = async () => {
     if (!isAuthenticated) {
@@ -244,17 +271,10 @@ function BookDetailModal({ book, onClose, isAuthenticated }) {
       return;
     }
 
-    try {
-      if (wishlisted) {
-        await wishlistApi.remove(book.id || book._id);
-        toast.info("Removed from wishlist.");
-      } else {
-        await wishlistApi.add(book.id || book._id);
-        toast.success("Added to wishlist.");
-      }
-      setWishlisted((current) => !current);
-    } catch (error) {
-      toast.error(error.message || "Wishlist action failed.");
+    if (wishlisted) {
+      await removeFromWishlist(book.id || book._id);
+    } else {
+      await addToWishlist(book);
     }
   };
 

@@ -6,7 +6,7 @@ import { FiHeart, FiMapPin, FiMessageCircle, FiRefreshCw, FiShield, FiShoppingBa
 import PageShell from "../../components/common/PageShell";
 import ProductCard from "../../components/cards/ProductCard";
 import { productApi } from "../../api/productApi";
-import { wishlistApi } from "../../api/wishlistApi";
+import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
 import productImage from "../../assets/images/book-cover.jpg";
 import sellerImage from "../../assets/images/team-member.jpg";
@@ -54,6 +54,8 @@ function ProductDetails() {
     return images.filter(Boolean);
   }, [product]);
 
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
   const handleWishlist = async () => {
     if (!isUserAuthenticated) {
       toast.info("Please login to save products.");
@@ -61,12 +63,10 @@ function ProductDetails() {
       return;
     }
 
-    try {
-      await wishlistApi.add(product.id);
-      window.dispatchEvent(new Event("wishlist:changed"));
-      toast.success("Added to Wishlist");
-    } catch (err) {
-      toast.error(err.message || "Unable to save product.");
+    if (isInWishlist(product.id || product._id)) {
+      await removeFromWishlist(product.id || product._id);
+    } else {
+      await addToWishlist(product);
     }
   };
 
@@ -130,7 +130,14 @@ function ProductDetails() {
           {product.exchangePreference && <p><strong>Exchange Preference:</strong> {product.exchangePreference}</p>}
           <div className="product-actions-main">
             <button className="btn btn--primary" type="button" onClick={handleSwap}><FiRefreshCw /> Request Exchange</button>
-            <button className="btn btn--light btn--border" type="button" onClick={handleWishlist}><FiHeart /> Save</button>
+            <button 
+              className={`btn btn--border ${isInWishlist(product.id || product._id) ? 'btn--primary bg-teal-50 text-teal-700 border-teal-200' : 'btn--light'}`} 
+              type="button" 
+              onClick={handleWishlist}
+            >
+              <FiHeart className={isInWishlist(product.id || product._id) ? "fill-current" : ""} /> 
+              {isInWishlist(product.id || product._id) ? "Saved" : "Save"}
+            </button>
           </div>
 
           <div className="seller-card">

@@ -6,6 +6,8 @@ const productRoutes = require("./product.routes");
 const wishlistRoutes = require("./wishlist.routes");
 const contactRoutes = require("./contact.routes");
 const categoryRoutes = require("./category.routes");
+const notificationRoutes = require("./notification.routes");
+const messageRoutes = require("./message.routes");
 const { HTTP_STATUS, SUCCESS_MESSAGES } = require("../constants");
 const { sendSuccess } = require("../utils/apiResponse");
 
@@ -22,5 +24,7 @@ router.use("/products", productRoutes);
 router.use("/wishlist", wishlistRoutes);
 router.use("/contact", contactRoutes);
 router.use("/categories", categoryRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/messages", messageRoutes);
 
 module.exports = router;

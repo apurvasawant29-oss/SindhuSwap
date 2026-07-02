@@ -93,33 +93,66 @@ const INITIAL_NOTIFICATIONS = [
   },
 ];
 
+import { notificationApi } from "../../api/notificationApi";
+
 function Notifications() {
-  const [list, setList] = useState(INITIAL_NOTIFICATIONS);
+  const [list, setList] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-  const unreadCount = list.filter((n) => !n.isRead).length;
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await notificationApi.list();
+        setList(res.data?.notifications || []);
+      } catch (err) {
+        console.error("Failed to fetch notifications", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNotifications();
+  }, []);
 
-  const handleMarkAsRead = (id) => {
-    setList((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
+  const unreadCount = list.filter((n) => !n.read).length;
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await notificationApi.markAsRead(id);
+      setList((prev) =>
+        prev.map((n) => (n._id === id || n.id === id ? { ...n, read: true } : n))
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    setList((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationApi.markAllAsRead();
+      setList((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDelete = (id) => {
-    setList((prev) => prev.filter((n) => n.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await notificationApi.remove(id);
+      setList((prev) => prev.filter((n) => n._id !== id && n.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleClearAll = () => {
+    // Optionally implement a clear all API route if needed
     setList([]);
   };
 
   const filteredNotifications = list.filter((n) => {
     if (activeTab === "all") return true;
-    if (activeTab === "unread") return !n.isRead;
+    if (activeTab === "unread") return !n.read;
     if (activeTab === "swaps") return n.type === "swap";
     if (activeTab === "messages") return n.type === "message";
     if (activeTab === "system") return n.type === "system" || n.type === "sold";
@@ -162,11 +195,9 @@ function Notifications() {
     }
   };
 
-  // Grouping notifications by time group
+  // Grouping notifications by time group (simplified for real API)
   const grouped = {
-    Today: filteredNotifications.filter((n) => n.timeGroup === "Today"),
-    Yesterday: filteredNotifications.filter((n) => n.timeGroup === "Yesterday"),
-    Earlier: filteredNotifications.filter((n) => n.timeGroup === "Earlier"),
+    All: filteredNotifications
   };
 
   const tabs = [
@@ -273,14 +304,14 @@ function Notifications() {
                       <AnimatePresence initial={false}>
                         {groupItems.map((n) => (
                           <motion.div
-                            key={n.id}
+                            key={n._id || n.id}
                             initial={{ opacity: 0, height: 0, y: 15 }}
                             animate={{ opacity: 1, height: "auto", y: 0 }}
                             exit={{ opacity: 0, height: 0, scale: 0.95 }}
                             transition={{ duration: 0.25 }}
                             layout
                             className={`group relative overflow-hidden rounded-xl border bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.01)] hover:shadow-md transition-shadow duration-200 ${
-                              n.isRead ? "border-slate-200/90 opacity-85" : "border-teal-200 ring-1 ring-teal-50"
+                              n.read ? "border-slate-200/90 opacity-85" : "border-teal-200 ring-1 ring-teal-50"
                             }`}
                           >
                             <div className="flex gap-3.5">
@@ -292,10 +323,10 @@ function Notifications() {
                               {/* Content */}
                               <div className="flex-1 min-w-0 pr-8">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <h3 className={`text-sm font-bold text-slate-800 ${!n.isRead ? "text-teal-900" : ""}`}>
+                                  <h3 className={`text-sm font-bold text-slate-800 ${!n.read ? "text-teal-900" : ""}`}>
                                     {n.title}
                                   </h3>
-                                  {!n.isRead && (
+                                  {!n.read && (
                                     <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                                   )}
                                 </div>
@@ -304,12 +335,12 @@ function Notifications() {
                                 </p>
                                 <div className="flex items-center gap-3 mt-2.5">
                                   <span className="text-[10px] text-slate-400 font-medium">
-                                    {n.time}
+                                    {new Date(n.createdAt || n.time).toLocaleDateString()}
                                   </span>
                                   {n.link && (
                                     <Link
                                       to={n.link}
-                                      onClick={() => handleMarkAsRead(n.id)}
+                                      onClick={() => handleMarkAsRead(n._id || n.id)}
                                       className="text-[10px] font-bold text-teal-600 hover:text-teal-700 hover:underline"
                                     >
                                       View details &rarr;
@@ -320,9 +351,9 @@ function Notifications() {
 
                               {/* Action hover bar */}
                               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white pl-2">
-                                {!n.isRead && (
+                                {!n.read && (
                                   <button
-                                    onClick={() => handleMarkAsRead(n.id)}
+                                    onClick={() => handleMarkAsRead(n._id || n.id)}
                                     className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 transition-colors"
                                     title="Mark as Read"
                                   >
@@ -330,7 +361,7 @@ function Notifications() {
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => handleDelete(n.id)}
+                                  onClick={() => handleDelete(n._id || n.id)}
                                   className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors"
                                   title="Delete notification"
                                 >

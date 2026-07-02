@@ -3,14 +3,17 @@ import { FiHeart, FiStar, FiMapPin, FiMessageCircle, FiEye } from "react-icons/f
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState } from "react";
-import { wishlistApi } from "../../api/wishlistApi";
 import { useAuth } from "../../context/AuthContext";
+import { useWishlist } from "../../context/WishlistContext";
 
 function ProductCard({ item }) {
-  const [wishlisted, setWishlisted] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const navigate = useNavigate();
   const { isUserAuthenticated } = useAuth();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+
+  const productId = item.id || item._id;
+  const wishlisted = isInWishlist(productId);
 
   const handleWishlist = async (e) => {
     e.preventDefault();
@@ -22,18 +25,10 @@ function ProductCard({ item }) {
       return;
     }
 
-    try {
-      if (wishlisted) {
-        await wishlistApi.remove(item.id || item._id);
-        toast.info("Removed from Wishlist");
-      } else {
-        await wishlistApi.add(item.id || item._id);
-        toast.success("Added to Wishlist");
-      }
-      window.dispatchEvent(new Event("wishlist:changed"));
-      setWishlisted((prev) => !prev);
-    } catch (error) {
-      toast.error(error.message || "Wishlist action failed");
+    if (wishlisted) {
+      await removeFromWishlist(productId);
+    } else {
+      await addToWishlist(item);
     }
   };
 

@@ -14,7 +14,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
-import { wishlistApi } from "../../api/wishlistApi";
+import { useWishlist } from "../../context/WishlistContext";
 import Logo from "../common/Logo";
 import SearchBar from "./SearchBar";
 
@@ -40,8 +40,8 @@ const messagePreview = [
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const { user, isUserAuthenticated, logoutUser } = useAuth();
+  const { wishlistCount } = useWishlist();
   const navigate = useNavigate();
 
   const closeMenus = () => {
@@ -59,26 +59,6 @@ function Navbar() {
     closeMenus();
     navigate(path);
   };
-
-  useEffect(() => {
-    if (!isUserAuthenticated) {
-      setWishlistCount(0);
-      return undefined;
-    }
-
-    const loadCount = async () => {
-      try {
-        const response = await wishlistApi.list();
-        setWishlistCount(response.data.count || 0);
-      } catch {
-        setWishlistCount(0);
-      }
-    };
-
-    loadCount();
-    window.addEventListener("wishlist:changed", loadCount);
-    return () => window.removeEventListener("wishlist:changed", loadCount);
-  }, [isUserAuthenticated]);
 
   return (
     <motion.header

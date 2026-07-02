@@ -3,41 +3,15 @@ import { motion } from "framer-motion";
 import { FiEye, FiHeart, FiMapPin, FiShoppingBag, FiStar, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
-import { wishlistApi } from "../../api/wishlistApi";
+import { useWishlist } from "../../context/WishlistContext";
 import heroImage from "../../assets/images/community.jpg";
 import productImage from "../../assets/images/book-cover.jpg";
 
 function Wishlist() {
-  const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadWishlist = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const response = await wishlistApi.list();
-      setWishlistItems(response.data.items || []);
-    } catch (err) {
-      setError(err.message || "Unable to load wishlist.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadWishlist();
-  }, []);
+  const { wishlist: wishlistItems, isLoading: loading, removeFromWishlist } = useWishlist();
 
   const removeItem = async (productId) => {
-    try {
-      await wishlistApi.remove(productId);
-      toast.info("Removed from Wishlist");
-      window.dispatchEvent(new Event("wishlist:changed"));
-      loadWishlist();
-    } catch (err) {
-      toast.error(err.message || "Unable to remove item.");
-    }
+    await removeFromWishlist(productId);
   };
 
   const hasItems = wishlistItems.length > 0;
@@ -59,15 +33,14 @@ function Wishlist() {
         </section>
       )}
 
-      {!loading && error && (
+      {!loading && !hasItems && (
         <section className="empty-state container">
-          <h2>Wishlist unavailable</h2>
-          <p>{error}</p>
-          <button className="btn btn--primary" type="button" onClick={loadWishlist}>Try Again</button>
+          <h2>Wishlist empty</h2>
+          <p>You haven't wishlisted any items yet.</p>
         </section>
       )}
 
-      {!loading && !error && hasItems ? (
+      {!loading && hasItems ? (
         <section className="section container">
           <div className="section-header">
             <div>
@@ -82,7 +55,7 @@ function Wishlist() {
         </section>
       ) : null}
 
-      {!loading && !error && !hasItems && <EmptyState />}
+      {!loading && !hasItems && <EmptyState />}
     </PageShell>
   );
 }
