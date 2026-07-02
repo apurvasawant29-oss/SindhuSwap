@@ -1,14 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { authApi } from "../api/authApi";
+import { ADMIN_TOKEN_KEY, USER_TOKEN_KEY } from "../api/client";
 
 const AuthContext = createContext(null);
 
 const USER_KEY = "sindhuswap_user";
-const USER_TOKEN_KEY = "sindhuswap_user_token";
 const ADMIN_KEY = "sindhuswap_admin";
-const ADMIN_TOKEN_KEY = "sindhuswap_admin_token";
-
-const createDemoToken = (role) =>
-  `${role}.${Date.now().toString(36)}.${Math.random().toString(36).slice(2)}`;
 
 function readStoredJson(key) {
   try {
@@ -21,16 +18,13 @@ function readStoredJson(key) {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [admin, setAdmin] = useState(null);
-  const [userToken, setUserToken] = useState(null);
-  const [adminToken, setAdminToken] = useState(null);
+  const [user, setUser] = useState(() => readStoredJson(USER_KEY));
+  const [admin, setAdmin] = useState(() => readStoredJson(ADMIN_KEY));
+  const [userToken, setUserToken] = useState(() => localStorage.getItem(USER_TOKEN_KEY));
+  const [adminToken, setAdminToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY));
 
   useEffect(() => {
-    setUser(readStoredJson(USER_KEY));
-    setAdmin(readStoredJson(ADMIN_KEY));
-    setUserToken(localStorage.getItem(USER_TOKEN_KEY));
-    setAdminToken(localStorage.getItem(ADMIN_TOKEN_KEY));
+    // Auth state is synchronized synchronously on mount.
   }, []);
 
   const loginUser = async ({ email, password }) => {
@@ -38,14 +32,9 @@ export function AuthProvider({ children }) {
       throw new Error("Email and password are required.");
     }
 
-    const nextUser = {
-      id: "user-demo",
-      name: email.split("@")[0] || "SindhuSwap User",
-      email,
-      role: "user",
-      avatar: (email[0] || "S").toUpperCase(),
-    };
-    const token = createDemoToken("user");
+    const response = await authApi.login({ email, password });
+    const nextUser = response.data.user;
+    const token = response.data.token;
 
     localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     localStorage.setItem(USER_TOKEN_KEY, token);
@@ -60,17 +49,9 @@ export function AuthProvider({ children }) {
       throw new Error("Admin username and password are required.");
     }
 
-    if (username !== "admin" || password !== "12345") {
-      throw new Error("Invalid administrator credentials.");
-    }
-
-    const nextAdmin = {
-      id: "admin-demo",
-      name: "Administrator",
-      username,
-      role: "admin",
-    };
-    const token = createDemoToken("admin");
+    const response = await authApi.adminLogin({ username, password });
+    const nextAdmin = response.data.user;
+    const token = response.data.token;
 
     localStorage.setItem(ADMIN_KEY, JSON.stringify(nextAdmin));
     localStorage.setItem(ADMIN_TOKEN_KEY, token);
@@ -80,19 +61,33 @@ export function AuthProvider({ children }) {
     return nextAdmin;
   };
 
-  const registerUser = async ({ name, email, mobile, password }) => {
+  const registerUser = async ({ name, email, mobile, password, taluka }) => {
     if (!name || !email || !mobile || !password) {
       throw new Error("Please complete all required fields.");
     }
 
-    localStorage.setItem(
-      "sindhuswap_last_registered_user",
-      JSON.stringify({ name, email, mobile, role: "user" })
-    );
-    return true;
+    const response = await authApi.register({
+      fullName: name,
+      email,
+      phone: mobile,
+      password,
+      taluka,
+    });
+
+    const nextUser = response.data.user;
+    const token = response.data.token;
+
+    localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+    localStorage.setItem(USER_TOKEN_KEY, token);
+    localStorage.setItem("userAuth", "true");
+    setUser(nextUser);
+    setUserToken(token);
+
+    return nextUser;
   };
 
-  const logoutUser = () => {
+  const logoutUser = async () => {
+    await authApi.logout().catch(() => {});
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(USER_TOKEN_KEY);
     localStorage.removeItem("userAuth");
@@ -100,7 +95,8 @@ export function AuthProvider({ children }) {
     setUserToken(null);
   };
 
-  const logoutAdmin = () => {
+  const logoutAdmin = async () => {
+    await authApi.logout().catch(() => {});
     localStorage.removeItem(ADMIN_KEY);
     localStorage.removeItem(ADMIN_TOKEN_KEY);
     localStorage.removeItem("adminAuth");

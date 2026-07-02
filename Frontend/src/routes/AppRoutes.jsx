@@ -32,6 +32,7 @@ import Contact from "../pages/info/Contact";
 import HelpCenterUser from "../pages/info/HelpCenter";
 import NotFound from "../pages/NotFound";
 import AddProduct from "../pages/product/AddProduct";
+import EditProduct from "../pages/product/EditProduct";
 import CategoriesUser from "../pages/product/Categories";
 import CategoryPage from "../pages/product/CategoryPage";
 import ProductDetails from "../pages/product/ProductDetails";
@@ -70,6 +71,7 @@ function AppRoutes() {
           <Route path="/messages" element={<Inbox />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/my-products" element={<MyListings />} />
+          <Route path="/edit-product/:id" element={<EditProduct />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
 

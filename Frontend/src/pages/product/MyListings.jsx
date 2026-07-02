@@ -1,12 +1,43 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { FiEdit3, FiEye, FiPlus, FiShoppingBag, FiTrendingUp } from "react-icons/fi";
+import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
 import ProductCard from "../../components/cards/ProductCard";
-import products from "../../data/products";
-
-const myListings = products.slice(0, 6);
+import { productApi } from "../../api/productApi";
 
 function MyListings() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadListings = async () => {
+      try {
+        setLoading(true);
+        const response = await productApi.mine({ limit: 12, sort: "-createdAt" });
+        setItems(response.data.products || []);
+      } catch (err) {
+        setError(err.message || "Unable to load your listings.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadListings();
+  }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      await productApi.remove(id);
+      setItems((current) => current.filter((item) => (item.id || item._id) !== id));
+      toast.success("Product deleted.");
+    } catch (err) {
+      toast.error(err.message || "Unable to delete product.");
+    }
+  };
+
   return (
     <PageShell>
       <section className="container py-10">
@@ -24,9 +55,9 @@ function MyListings() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
             {[
-              { label: "Active Listings", value: myListings.length, icon: FiShoppingBag },
-              { label: "Total Views", value: "2.4k", icon: FiEye },
-              { label: "Swap Leads", value: 18, icon: FiTrendingUp },
+              { label: "Active Listings", value: items.length, icon: FiShoppingBag },
+              { label: "Total Views", value: items.reduce((sum, item) => sum + (Number(item.views) || 0), 0).toString(), icon: FiEye },
+              { label: "Swap Leads", value: items.filter((item) => item.productType === "Swap" || item.status === "Pending Approval").length, icon: FiTrendingUp },
             ].map((stat) => {
               const Icon = stat.icon;
               return (
@@ -45,11 +76,25 @@ function MyListings() {
           <Link to="/profile" className="text-sm font-bold text-teal-700 hover:underline"><FiEdit3 className="inline mr-1" /> Profile</Link>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {myListings.map((item) => (
-            <ProductCard key={item.id} item={item} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="empty-state container"><p>Loading your listings...</p></div>
+        ) : error ? (
+          <div className="empty-state container"><p>{error}</p></div>
+        ) : items.length === 0 ? (
+          <div className="empty-state container"><p>No products yet. List your first item to get started.</p></div>
+        ) : (
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((item) => (
+              <div key={item.id || item._id}>
+                <ProductCard item={item} />
+                <div className="mt-3 flex gap-2">
+                  <button className="btn btn--light btn--border" type="button" onClick={() => navigate(`/edit-product/${item.id || item._id}`)}>Edit</button>
+                  <button className="btn btn--primary" type="button" onClick={() => handleDelete(item.id || item._id)}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </PageShell>
   );

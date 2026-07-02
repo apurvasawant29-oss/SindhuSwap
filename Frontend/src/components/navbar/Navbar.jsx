@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -14,6 +14,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
+import { wishlistApi } from "../../api/wishlistApi";
 import Logo from "../common/Logo";
 import SearchBar from "./SearchBar";
 
@@ -39,6 +40,7 @@ const messagePreview = [
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const { user, isUserAuthenticated, logoutUser } = useAuth();
   const navigate = useNavigate();
 
@@ -57,6 +59,26 @@ function Navbar() {
     closeMenus();
     navigate(path);
   };
+
+  useEffect(() => {
+    if (!isUserAuthenticated) {
+      setWishlistCount(0);
+      return undefined;
+    }
+
+    const loadCount = async () => {
+      try {
+        const response = await wishlistApi.list();
+        setWishlistCount(response.data.count || 0);
+      } catch {
+        setWishlistCount(0);
+      }
+    };
+
+    loadCount();
+    window.addEventListener("wishlist:changed", loadCount);
+    return () => window.removeEventListener("wishlist:changed", loadCount);
+  }, [isUserAuthenticated]);
 
   return (
     <motion.header
@@ -122,7 +144,7 @@ function Navbar() {
             <>
               <button className="navbar__icon-button" type="button" onClick={() => goTo("/wishlist")} aria-label="Wishlist">
                 <FiHeart />
-                <span className="navbar__badge">3</span>
+                <span className="navbar__badge">{wishlistCount}</span>
               </button>
 
               <div className="navbar__dropdown-wrap">

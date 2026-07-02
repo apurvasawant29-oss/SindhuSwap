@@ -1,7 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FiArrowRight,
-  FiBookOpen,
   FiCheck,
   FiEye,
   FiHeart,
@@ -16,9 +16,14 @@ import {
   FiUploadCloud,
   FiUser,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
 import profileImage from "../../assets/images/team-member.jpg";
 import communityImage from "../../assets/images/community.jpg";
+import { productApi } from "../../api/productApi";
+import { adminApi } from "../../api/adminApi";
+import { useAuth } from "../../context/AuthContext";
 
 const sidebarLinks = [
   ["My Profile", FiUser],
@@ -32,14 +37,96 @@ const sidebarLinks = [
   ["Settings", FiSettings],
 ];
 
+const defaultForm = {
+  title: "",
+  description: "",
+  category: "Books",
+  condition: "Good",
+  productType: "Swap",
+  price: "",
+  taluka: "",
+  address: "",
+  exchangePreference: "",
+};
+
 function AddProduct() {
+  const [form, setForm] = useState(defaultForm);
+  const [categories, setCategories] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await adminApi.categories();
+        setCategories((response.data.categories || []).map((category) => category.name || category));
+      } catch {
+        setCategories(["Books", "Electronics", "Furniture", "Mobiles", "Fashion", "Sports", "Vehicles", "Others"]);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files || []);
+    setSelectedFiles(files.slice(0, 6));
+  };
+
+  const previewSummary = useMemo(() => ({
+    title: form.title || "Product Title",
+    category: form.category || "Category",
+    price: form.price ? `Rs. ${Number(form.price).toLocaleString("en-IN")}` : form.productType === "Swap" ? "Swap Only" : "Rs. 0",
+    condition: form.condition || "Like New",
+    location: form.taluka || "Your Taluka",
+  }), [form]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setLoading(true);
+      const payload = new FormData();
+      payload.append("title", form.title);
+      payload.append("description", form.description);
+      payload.append("category", form.category);
+      payload.append("condition", form.condition);
+      payload.append("productType", form.productType);
+      payload.append("price", form.price || "0");
+      payload.append("taluka", form.taluka);
+      payload.append("address", form.address);
+      payload.append("exchangePreference", form.exchangePreference);
+      selectedFiles.forEach((file) => payload.append("images", file));
+
+      await productApi.create(payload);
+      toast.success("Product listed successfully.");
+      navigate("/my-products");
+    } catch (error) {
+      toast.error(error.message || "Unable to create product.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setForm(defaultForm);
+    setSelectedFiles([]);
+  };
+
   return (
     <PageShell>
       <section className="add-product-layout">
         <aside className="seller-sidebar">
-          <img src={profileImage} alt="Apurva Patil" />
-          <h3>Apurva Patil</h3>
-          <p>Sawantwadi, Sindhudurg</p>
+          <img src={user?.profileImage || user?.avatar || profileImage} alt={user?.name || "Seller"} />
+          <h3>{user?.name || user?.fullName || "Seller"}</h3>
+          <p>{user?.taluka || "Sindhudurg"}</p>
           <span>Verified Member</span>
           <nav>
             {sidebarLinks.map(([label, Icon]) => (
@@ -62,50 +149,50 @@ function AddProduct() {
           <p>Fill in the details below to list your item and reach the right people.</p>
 
           <div className="add-product-grid">
-            <motion.form className="product-form-panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.form className="product-form-panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleSubmit}>
               <h2><FiTag /> Product Details</h2>
               <div className="form-row">
-                <FormField label="Product Title *" placeholder="Enter product title (e.g. Python Programming Book)" />
-                <FormSelect label="Category *" options={["Select category", "Electronics", "Furniture", "Books", "Mobiles"]} />
+                <FormField label="Product Title *" name="title" value={form.title} onChange={handleChange} placeholder="Enter product title" />
+                <FormSelect label="Category *" name="category" value={form.category} onChange={handleChange} options={categories.length ? categories : ["Books", "Electronics", "Furniture", "Mobiles"]} />
               </div>
               <label className="form-field form-field--full">
                 <span>Description *</span>
-                <textarea placeholder="Describe your product, its condition, features, etc." />
-                <small>0/500</small>
+                <textarea name="description" value={form.description} onChange={handleChange} placeholder="Describe your product, its condition, features, etc." />
               </label>
               <div className="form-row form-row--thirds">
-                <FormSelect label="Condition *" options={["Select condition", "Like New", "Good", "Fair"]} />
+                <FormSelect label="Condition *" name="condition" value={form.condition} onChange={handleChange} options={["Like New", "Good", "Excellent", "Fair"]} />
                 <div className="form-field">
-                  <span>Price Type *</span>
+                  <span>Product Type *</span>
                   <div className="price-toggle">
-                    <button className="is-active" type="button"><FiTag /> For Sale</button>
-                    <button type="button"><FiRefreshCw /> For Swap</button>
+                    <button className={form.productType === "Sale" ? "is-active" : ""} type="button" onClick={() => setForm((current) => ({ ...current, productType: "Sale" }))}><FiTag /> For Sale</button>
+                    <button className={form.productType === "Swap" ? "is-active" : ""} type="button" onClick={() => setForm((current) => ({ ...current, productType: "Swap" }))}><FiRefreshCw /> For Swap</button>
                   </div>
                 </div>
-                <FormField label="Price (₹) *" placeholder="Enter price" suffix="₹" />
+                <FormField label="Price (₹)" name="price" value={form.price} onChange={handleChange} placeholder="Enter price" suffix="₹" />
               </div>
               <div className="form-row">
-                <FormSelect label="Location (Taluka) *" options={["Select your taluka", "Sawantwadi", "Kudal", "Malvan", "Kankavli"]} />
-                <FormSelect label="Availability *" options={["Select availability", "Available", "Reserved", "Sold"]} />
+                <FormField label="Location (Taluka) *" name="taluka" value={form.taluka} onChange={handleChange} placeholder="e.g. Sawantwadi" />
+                <FormField label="Address" name="address" value={form.address} onChange={handleChange} placeholder="Enter address" />
               </div>
+              <FormField label="Exchange Preference" name="exchangePreference" value={form.exchangePreference} onChange={handleChange} placeholder="e.g. Exchange for books" />
 
               <div className="upload-section">
                 <h3>Upload Images *</h3>
                 <p>Add clear images of your product (Max 6 images)</p>
                 <div className="upload-grid">
-                  <button className="upload-tile upload-tile--main" type="button">
+                  <label className="upload-tile upload-tile--main" htmlFor="product-images">
                     <FiUploadCloud />
                     <strong>Upload Images</strong>
-                    <span>Click to upload or drag and drop PNG, JPG up to 5MB</span>
-                  </button>
-                  {[1, 2, 3, 4, 5].map((item) => <button className="upload-tile" type="button" key={item}><FiImage /></button>)}
-                  <button className="upload-tile upload-tile--add" type="button"><FiPlus /><span>Add More</span></button>
+                    <span>Click to upload PNG, JPG up to 5MB</span>
+                  </label>
+                  <input id="product-images" type="file" accept="image/*" multiple onChange={handleFileChange} hidden />
+                  {selectedFiles.length > 0 ? selectedFiles.map((file) => <div className="upload-tile" key={file.name}><FiImage /> {file.name}</div>) : [1, 2, 3, 4, 5].map((item) => <div className="upload-tile" key={item}><FiImage /></div>)}
                 </div>
               </div>
 
               <div className="form-actions">
-                <button className="btn btn--light btn--border" type="reset">Clear All</button>
-                <button className="btn btn--primary" type="submit">Preview Product <FiArrowRight /></button>
+                <button className="btn btn--light btn--border" type="button" onClick={resetForm}>Clear All</button>
+                <button className="btn btn--primary" type="submit" disabled={loading}>{loading ? "Listing..." : "List Product"} <FiArrowRight /></button>
               </div>
             </motion.form>
 
@@ -116,12 +203,12 @@ function AddProduct() {
                 <article className="preview-card">
                   <div className="preview-card__image"><FiImage /><button><FiHeart /></button></div>
                   <div>
-                    <span>For Sale</span>
-                    <h3>Product Title</h3>
-                    <p>Category Name</p>
-                    <strong>₹0</strong>
-                    <small><FiMapPin /> Your Taluka</small>
-                    <em>Like New</em>
+                    <span>{form.productType === "Swap" ? "For Swap" : "For Sale"}</span>
+                    <h3>{previewSummary.title}</h3>
+                    <p>{previewSummary.category}</p>
+                    <strong>{previewSummary.price}</strong>
+                    <small><FiMapPin /> {previewSummary.location}</small>
+                    <em>{previewSummary.condition}</em>
                   </div>
                 </article>
               </div>
@@ -139,23 +226,23 @@ function AddProduct() {
   );
 }
 
-function FormField({ label, placeholder, suffix }) {
+function FormField({ label, name, value, onChange, placeholder, suffix }) {
   return (
     <label className="form-field">
       <span>{label}</span>
       <div>
-        <input placeholder={placeholder} />
+        <input name={name} value={value} onChange={onChange} placeholder={placeholder} />
         {suffix && <b>{suffix}</b>}
       </div>
     </label>
   );
 }
 
-function FormSelect({ label, options }) {
+function FormSelect({ label, name, value, onChange, options }) {
   return (
     <label className="form-field">
       <span>{label}</span>
-      <select>
+      <select name={name} value={value} onChange={onChange}>
         {options.map((option) => <option key={option}>{option}</option>)}
       </select>
     </label>

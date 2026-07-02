@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -21,7 +21,7 @@ import { GiSofa, GiToyMallet, GiWaterBottle } from "react-icons/gi";
 import { IoLeafOutline } from "react-icons/io5";
 import PageShell from "../../components/common/PageShell";
 import ProductCard from "../../components/cards/ProductCard";
-import products from "../../data/products";
+import { productApi } from "../../api/productApi";
 
 // Sindhudurg Talukas list
 const TALUKAS = [
@@ -205,6 +205,30 @@ function CategoryPage() {
   const [selectedAvailability, setSelectedAvailability] = useState("All");
   const [selectedSellerType, setSelectedSellerType] = useState("All");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setLoadError("");
+        const response = await productApi.list({
+          category: meta.tags[0] || meta.name,
+          limit: 48,
+          sort: "-createdAt",
+        });
+        setProducts(response.data.products || []);
+      } catch (error) {
+        setLoadError(error.message || "Unable to load category products.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [meta.name, meta.tags]);
 
   // Toggle checklist filters
   const toggleCondition = (cond) => {
@@ -587,7 +611,16 @@ function CategoryPage() {
               </div>
 
               {/* Product grid with stagger animation */}
-              {filteredProducts.length === 0 ? (
+              {loading ? (
+                <div className="bg-white border border-slate-200/80 rounded-2xl py-16 text-center shadow-[0_2px_8px_rgba(15,23,42,0.01)] px-4">
+                  <p className="text-sm text-slate-500 font-semibold">Loading products...</p>
+                </div>
+              ) : loadError ? (
+                <div className="bg-white border border-slate-200/80 rounded-2xl py-16 text-center shadow-[0_2px_8px_rgba(15,23,42,0.01)] px-4">
+                  <h3 className="text-lg font-bold text-slate-700">Unable to load products</h3>
+                  <p className="text-sm text-slate-400 mt-1 max-w-sm mx-auto">{loadError}</p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="bg-white border border-slate-200/80 rounded-2xl py-16 text-center shadow-[0_2px_8px_rgba(15,23,42,0.01)] px-4">
                   <FiSearch className="mx-auto h-12 w-12 text-slate-300 mb-3" />
                   <h3 className="text-lg font-bold text-slate-700">No products found</h3>

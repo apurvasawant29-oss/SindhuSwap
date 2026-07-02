@@ -16,7 +16,6 @@ import {
   FiShoppingBag,
   FiStar,
   FiTrash2,
-  FiUser,
 } from "react-icons/fi";
 import PageShell from "../../components/common/PageShell";
 import coverImage from "../../assets/images/sindhu-fort.jpg";

@@ -1,25 +1,45 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiEye, FiHeart, FiMapPin, FiShoppingBag, FiStar, FiTrash2 } from "react-icons/fi";
+import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
+import { wishlistApi } from "../../api/wishlistApi";
 import heroImage from "../../assets/images/community.jpg";
 import productImage from "../../assets/images/book-cover.jpg";
-import altProductImage from "../../assets/images/sindhu-fort.jpg";
-import profileImage from "../../assets/images/team-member.jpg";
-
-const wishlistItems = [
-  { name: "MacBook Air M1", seller: "Rohan Patil", taluka: "Kankavli", condition: "Excellent", price: "₹65,000", rating: "4.9", image: productImage },
-  { name: "Hero Sprint Bicycle", seller: "Neha Naik", taluka: "Vengurla", condition: "Good", price: "₹6,500", rating: "4.7", image: altProductImage },
-  { name: "The Alchemist", seller: "Paulo Coelho", taluka: "Sawantwadi", condition: "Swap Only", price: "Swap Only", rating: "4.8", image: productImage },
-  { name: "iPhone 13", seller: "Amit Sawant", taluka: "Malvan", condition: "Like New", price: "₹38,000", rating: "4.8", image: heroImage },
-  { name: "3 Seater Sofa", seller: "Priya More", taluka: "Kudal", condition: "Good", price: "₹12,000", rating: "4.6", image: altProductImage },
-  { name: "Canon EOS 200D", seller: "Sahil Gaonkar", taluka: "Sawantwadi", condition: "Excellent", price: "₹28,000", rating: "4.9", image: profileImage },
-  { name: "Study Table", seller: "Maya Patil", taluka: "Kankavli", condition: "Like New", price: "₹2,800", rating: "4.5", image: heroImage },
-  { name: "Atomic Habits", seller: "James Clear", taluka: "Vengurla", condition: "Swap Only", price: "Swap Only", rating: "4.9", image: productImage },
-];
-
-const recommended = wishlistItems.slice(0, 4);
 
 function Wishlist() {
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadWishlist = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await wishlistApi.list();
+      setWishlistItems(response.data.items || []);
+    } catch (err) {
+      setError(err.message || "Unable to load wishlist.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadWishlist();
+  }, []);
+
+  const removeItem = async (productId) => {
+    try {
+      await wishlistApi.remove(productId);
+      toast.info("Removed from Wishlist");
+      window.dispatchEvent(new Event("wishlist:changed"));
+      loadWishlist();
+    } catch (err) {
+      toast.error(err.message || "Unable to remove item.");
+    }
+  };
+
   const hasItems = wishlistItems.length > 0;
 
   return (
@@ -33,7 +53,21 @@ function Wishlist() {
         <motion.img src={heroImage} alt="Wishlist illustration placeholder" animate={{ y: [0, -10, 0] }} transition={{ duration: 5, repeat: Infinity }} />
       </section>
 
-      {hasItems ? (
+      {loading && (
+        <section className="section container">
+          <p className="text-sm text-slate-500 font-semibold">Loading wishlist...</p>
+        </section>
+      )}
+
+      {!loading && error && (
+        <section className="empty-state container">
+          <h2>Wishlist unavailable</h2>
+          <p>{error}</p>
+          <button className="btn btn--primary" type="button" onClick={loadWishlist}>Try Again</button>
+        </section>
+      )}
+
+      {!loading && !error && hasItems ? (
         <section className="section container">
           <div className="section-header">
             <div>
@@ -43,42 +77,36 @@ function Wishlist() {
             <button className="share-button" type="button"><FiHeart /> Share Wishlist</button>
           </div>
           <div className="wishlist-grid">
-            {wishlistItems.map((item) => <WishlistCard item={item} key={item.name} />)}
+            {wishlistItems.map((item) => <WishlistCard item={item} onRemove={removeItem} key={item.id || item.product?.id} />)}
           </div>
         </section>
-      ) : (
-        <EmptyState />
-      )}
+      ) : null}
 
-      <section className="section container">
-        <div className="section-header"><h2>Recommended Products</h2></div>
-        <div className="wishlist-grid wishlist-grid--compact">
-          {recommended.map((item) => <WishlistCard item={item} key={`recommended-${item.name}`} />)}
-        </div>
-      </section>
+      {!loading && !error && !hasItems && <EmptyState />}
     </PageShell>
   );
 }
 
-function WishlistCard({ item }) {
+function WishlistCard({ item, onRemove }) {
+  const product = item.product || item;
   return (
     <motion.article className="wishlist-card" whileHover={{ y: -8 }}>
       <div className="wishlist-card__image">
-        <img src={item.image} alt={item.name} />
-        <button aria-label={`Remove ${item.name}`}><FiHeart /></button>
+        <img src={product.image || productImage} alt={product.name} />
+        <button aria-label={`Remove ${product.name}`} onClick={() => onRemove(product.id)}><FiHeart /></button>
       </div>
       <div className="wishlist-card__body">
-        <h3>{item.name}</h3>
-        <p>{item.seller}</p>
+        <h3>{product.name}</h3>
+        <p>{product.seller}</p>
         <div className="wishlist-card__meta">
-          <span><FiMapPin /> {item.taluka}</span>
-          <span><FiStar /> {item.rating}</span>
+          <span><FiMapPin /> {product.taluka}</span>
+          <span><FiStar /> {product.rating || 4.5}</span>
         </div>
-        <small>{item.condition}</small>
-        <strong>{item.price}</strong>
+        <small>{product.condition}</small>
+        <strong>{product.productType === "Swap" ? "Swap Only" : `Rs. ${Number(product.price || 0).toLocaleString("en-IN")}`}</strong>
         <div className="wishlist-card__actions">
-          <a href="/product/1"><FiEye /> View Details</a>
-          <button type="button"><FiTrash2 /> Remove</button>
+          <a href={`/product/${product.id}`}><FiEye /> View Details</a>
+          <button type="button" onClick={() => onRemove(product.id)}><FiTrash2 /> Remove</button>
         </div>
       </div>
     </motion.article>

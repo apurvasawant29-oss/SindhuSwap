@@ -1,41 +1,27 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  FiArrowRight,
   FiBookOpen,
+  FiCheckCircle,
   FiChevronDown,
   FiClock,
-  FiX,
   FiHeart,
   FiMapPin,
   FiRefreshCw,
   FiSearch,
   FiShield,
   FiUsers,
+  FiX,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
 import bookCover from "../../assets/images/book-cover.jpg";
 import communityImage from "../../assets/images/community.jpg";
 import teamMember from "../../assets/images/team-member.jpg";
-import alchemistImage from "../../assets/Books/alchemist.jpg";
-import richDadImage from "../../assets/Books/rap.jpg";
-import atomicImage from "../../assets/Books/atomic.jpg";
-import fiveAmImage from "../../assets/Books/5am.jpg";
-import ikigaiImage from "../../assets/Books/ikigai.jpg";
-import wingsImage from "../../assets/Books/wof.jpg";
-import tspImage from "../../assets/Books/tsp.jpg";
-import nineteenImage from "../../assets/Books/1984.jpg";
-
-const books = [
-  { title: "The Alchemist", author: "Paulo Coelho", condition: "Good", taluka: "Kankavli", status: "Available", image: alchemistImage, genre: "Fiction", owner: "Riya Patil", pages: "208", language: "English", description: "A clean copy of the classic journey story. Perfect for readers who enjoy inspiring fiction and simple, meaningful writing." },
-  { title: "Rich Dad Poor Dad", author: "Robert Kiyosaki", condition: "Like New", taluka: "Sawantwadi", status: "Popular", image: richDadImage, genre: "Finance", owner: "Omkar Naik", pages: "336", language: "English", description: "A popular personal finance book in excellent condition. Great for beginners learning about money and mindset." },
-  { title: "Atomic Habits", author: "James Clear", condition: "Good", taluka: "Malvan", status: "Available", image: atomicImage, genre: "Self Help", owner: "Sneha Sawant", pages: "320", language: "English", description: "Useful for students and professionals who want practical habits, routines, and productivity ideas." },
-  { title: "The 5 AM Club", author: "Robin Sharma", condition: "Like New", taluka: "Kudal", status: "New", image: fiveAmImage, genre: "Self Help", owner: "Amit Patkar", pages: "336", language: "English", description: "A motivational read about morning routines, focus, and personal growth. Cover and pages are well maintained." },
-  { title: "Ikigai", author: "Hector Garcia", condition: "Good", taluka: "Vengurla", status: "Available", image: ikigaiImage, genre: "Lifestyle", owner: "Maya Naik", pages: "208", language: "English", description: "A peaceful and thoughtful book about purpose, health, and simple living. Good for light reading." },
-  { title: "Wings of Fire", author: "A.P.J. Abdul Kalam", condition: "Like New", taluka: "Vaibhavwadi", status: "Trending", image: wingsImage, genre: "Biography", owner: "Sahil Gaonkar", pages: "180", language: "English", description: "Inspiring autobiography of Dr. A.P.J. Abdul Kalam. Great for students and biography readers." },
-  { title: "The Silent Patient", author: "Alex Michaelides", condition: "Good", taluka: "Devgad", status: "Available", image: tspImage, genre: "Thriller", owner: "Pranav Jadhav", pages: "336", language: "English", description: "A suspenseful thriller copy available for swap. Best for readers who like mystery and fast-paced stories." },
-  { title: "1984", author: "George Orwell", condition: "Good", taluka: "Dodamarg", status: "Classic", image: nineteenImage, genre: "Dystopian", owner: "Tanvi More", pages: "328", language: "English", description: "A classic dystopian novel in readable condition. Perfect for literature readers and students." },
-];
+import { productApi } from "../../api/productApi";
+import { wishlistApi } from "../../api/wishlistApi";
+import { useAuth } from "../../context/AuthContext";
 
 const benefits = [
   { title: "Save Money", text: "Get books for free by swapping.", icon: FiRefreshCw },
@@ -50,7 +36,44 @@ const steps = [
 ];
 
 function BookSwap() {
+  const [books, setBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("Books");
+  const [condition, setCondition] = useState("All");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, limit: 8, totalPages: 1, totalItems: 0 });
+  const { isUserAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const loadBooks = async () => {
+      try {
+        setLoading(true);
+        const response = await productApi.list({
+          category: category === "All" ? "Books" : category,
+          search: search.trim(),
+          condition: condition === "All" ? "" : condition,
+          page,
+          limit: 8,
+          sort: "-createdAt",
+        });
+
+        setBooks(response.data.products || []);
+        setPagination(response.data.pagination || { page: 1, limit: 8, totalPages: 1, totalItems: 0 });
+        setError("");
+      } catch (err) {
+        setError(err.message || "Unable to load books right now.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBooks();
+  }, [category, condition, page, search]);
+
+  const totalItems = useMemo(() => pagination.totalItems || books.length, [books.length, pagination.totalItems]);
 
   return (
     <PageShell>
@@ -84,21 +107,46 @@ function BookSwap() {
       <section className="swap-search container" aria-label="Search books">
         <label>
           <FiSearch />
-          <input placeholder="Search books by title, author..." />
+          <input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search books by title, author..." />
         </label>
-        <button className="select-button" type="button">Select Category <FiChevronDown /></button>
-        <button className="select-button" type="button">Select Condition <FiChevronDown /></button>
-        <button className="btn btn--primary" type="button">Search</button>
+        <select value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="select-button" aria-label="Select Category">
+          <option value="All">Select Category</option>
+          <option value="Books">Books</option>
+        </select>
+        <select value={condition} onChange={(event) => { setCondition(event.target.value); setPage(1); }} className="select-button" aria-label="Select Condition">
+          <option value="All">Select Condition</option>
+          <option value="Like New">Like New</option>
+          <option value="Good">Good</option>
+          <option value="Excellent">Excellent</option>
+          <option value="Fair">Fair</option>
+        </select>
+        <button className="btn btn--primary" type="button" onClick={() => setPage(1)}>Search</button>
       </section>
 
       <section className="section container" id="books">
         <div className="section-header">
           <h2>Books Available for Swap</h2>
-          <span className="book-count">Total Books: 128</span>
+          <span className="book-count">Total Books: {totalItems}</span>
         </div>
-        <div className="book-grid book-grid--premium">
-          {books.map((book) => <BookCard book={book} onSelect={setSelectedBook} key={book.title} />)}
-        </div>
+
+        {loading ? (
+          <div className="empty-state container"><p>Loading books from the community...</p></div>
+        ) : error ? (
+          <div className="empty-state container"><p>{error}</p></div>
+        ) : books.length === 0 ? (
+          <div className="empty-state container"><p>No books match your filters right now.</p></div>
+        ) : (
+          <>
+            <div className="book-grid book-grid--premium">
+              {books.map((book) => <BookCard book={book} onSelect={setSelectedBook} key={book.id || book._id} />)}
+            </div>
+            <div className="section-header" style={{ marginTop: "1.5rem" }}>
+              <button className="btn btn--light btn--border" type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>Previous</button>
+              <span className="book-count">Page {pagination.page || page} of {pagination.totalPages || 1}</span>
+              <button className="btn btn--light btn--border" type="button" disabled={page >= (pagination.totalPages || 1)} onClick={() => setPage((current) => current + 1)}>Next</button>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="swap-timeline container">
@@ -110,7 +158,7 @@ function BookSwap() {
 
       <section className="section container">
         <div className="benefit-grid">
-          {["Community", "Education", "Save Money", "Eco Friendly"].map((title) => (
+          {['Community', 'Education', 'Save Money', 'Eco Friendly'].map((title) => (
             <motion.article className="feature-card" whileHover={{ y: -6 }} key={title}>
               <FiBookOpen />
               <h3>{title}</h3>
@@ -128,7 +176,7 @@ function BookSwap() {
         <a className="btn btn--primary" href="/add-product">List My Books</a>
       </section>
 
-      {selectedBook && <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} />}
+      {selectedBook && <BookDetailModal book={selectedBook} onClose={() => setSelectedBook(null)} isAuthenticated={isUserAuthenticated} />}
     </PageShell>
   );
 }
@@ -150,13 +198,13 @@ function BookCard({ book, onSelect }) {
   return (
     <motion.article className="book-card book-card--premium" whileHover={{ y: -8 }}>
       <div className="book-card__cover">
-        <img src={book.image} alt={`${book.title} cover`} />
-        <span>{book.status}</span>
-        <button aria-label={`Save ${book.title}`}><FiHeart /></button>
+        <img src={book.image || book.images?.[0]?.url || ""} alt={`${book.title} cover`} />
+        <span>{book.status || "Available"}</span>
+        <button aria-label={`Save ${book.title}`} type="button"><FiHeart /></button>
       </div>
       <div className="book-card__body">
         <h3>{book.title}</h3>
-        <p>{book.author}</p>
+        <p>{book.seller || "Community Seller"}</p>
         <small>{book.condition}</small>
         <div><FiMapPin /> {book.taluka}</div>
         <button type="button" onClick={() => onSelect(book)}>View & Swap</button>
@@ -165,7 +213,51 @@ function BookCard({ book, onSelect }) {
   );
 }
 
-function BookDetailModal({ book, onClose }) {
+function BookDetailModal({ book, onClose, isAuthenticated }) {
+  const [loading, setLoading] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSwapRequest = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please login to request a swap.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await productApi.requestSwap(book.id || book._id, { message: "I would like to swap for this book." });
+      toast.success("Swap request sent successfully.");
+      onClose();
+    } catch (error) {
+      toast.error(error.message || "Unable to send swap request.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.info("Please login to save this item.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (wishlisted) {
+        await wishlistApi.remove(book.id || book._id);
+        toast.info("Removed from wishlist.");
+      } else {
+        await wishlistApi.add(book.id || book._id);
+        toast.success("Added to wishlist.");
+      }
+      setWishlisted((current) => !current);
+    } catch (error) {
+      toast.error(error.message || "Wishlist action failed.");
+    }
+  };
+
   return (
     <div className="book-modal-backdrop" role="presentation" onClick={onClose}>
       <motion.article
@@ -178,28 +270,28 @@ function BookDetailModal({ book, onClose }) {
           <FiX />
         </button>
         <div className="book-detail-cover">
-          <img src={book.image} alt={`${book.title} cover`} />
-          <span>{book.status}</span>
+          <img src={book.image || book.images?.[0]?.url || ""} alt={`${book.title} cover`} />
+          <span>{book.status || "Available"}</span>
         </div>
         <div className="book-detail-content">
           <span className="eyebrow"><FiBookOpen /> Book Details</span>
           <h2>{book.title}</h2>
-          <p className="book-detail-author">by {book.author}</p>
+          <p className="book-detail-author">by {book.seller || "Community Seller"}</p>
           <p>{book.description}</p>
           <div className="book-detail-meta">
             <span><FiMapPin /> {book.taluka}</span>
             <span><FiCheckCircle /> {book.condition}</span>
-            <span><FiClock /> {book.pages} pages</span>
-            <span><FiUsers /> Owner: {book.owner}</span>
+            <span><FiClock /> {book.price ? `Rs. ${book.price}` : "Swap Only"}</span>
+            <span><FiUsers /> Owner: {book.seller || "Community Seller"}</span>
           </div>
           <div className="book-detail-tags">
-            <span>{book.genre}</span>
-            <span>{book.language}</span>
-            <span>Swap Only</span>
+            <span>{book.category}</span>
+            <span>{book.productType || "Swap"}</span>
+            <span>{book.condition}</span>
           </div>
           <div className="book-detail-actions">
-            <button className="btn btn--primary" type="button">Request Swap <FiRefreshCw /></button>
-            <button className="btn btn--light btn--border" type="button">Save Book <FiHeart /></button>
+            <button className="btn btn--primary" type="button" onClick={handleSwapRequest} disabled={loading}>{loading ? "Sending..." : "Request Swap"} <FiRefreshCw /></button>
+            <button className="btn btn--light btn--border" type="button" onClick={handleWishlist}>{wishlisted ? "Saved" : "Save Book"} <FiHeart /></button>
           </div>
         </div>
       </motion.article>

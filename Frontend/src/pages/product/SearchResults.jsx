@@ -1,36 +1,44 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { FiSearch, FiX } from "react-icons/fi";
 import PageShell from "../../components/common/PageShell";
 import ProductCard from "../../components/cards/ProductCard";
-import products from "../../data/products";
+import { productApi } from "../../api/productApi";
 
 function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
   const [sortBy, setSortBy] = useState("newest");
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const results = useMemo(() => {
-    const term = initialQuery.trim().toLowerCase();
-    const filtered = !term
-      ? products
-      : products.filter((product) => {
-          return (
-            product.name?.toLowerCase().includes(term) ||
-            product.category?.toLowerCase().includes(term) ||
-            product.location?.toLowerCase().includes(term) ||
-            product.seller?.toLowerCase().includes(term) ||
-            product.condition?.toLowerCase().includes(term)
-          );
+  useEffect(() => {
+    const loadResults = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const sortMap = {
+          newest: "-createdAt",
+          oldest: "createdAt",
+          "price-low": "price",
+          "price-high": "-price",
+        };
+        const response = await productApi.list({
+          search: initialQuery,
+          sort: sortMap[sortBy],
+          limit: 24,
         });
+        setResults(response.data.products || []);
+      } catch (err) {
+        setError(err.message || "Unable to search products.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return [...filtered].sort((a, b) => {
-      if (sortBy === "price-low") return (a.price || 0) - (b.price || 0);
-      if (sortBy === "price-high") return (b.price || 0) - (a.price || 0);
-      if (sortBy === "oldest") return a.id - b.id;
-      return b.id - a.id;
-    });
+    loadResults();
   }, [initialQuery, sortBy]);
 
   const handleSubmit = (event) => {
@@ -91,7 +99,16 @@ function SearchResults() {
           </div>
         </div>
 
-        {results.length === 0 ? (
+        {loading ? (
+          <div className="mt-8 bg-white border border-slate-200/80 rounded-2xl py-16 text-center">
+            <p className="text-sm text-slate-500 font-semibold">Searching products...</p>
+          </div>
+        ) : error ? (
+          <div className="mt-8 bg-white border border-slate-200/80 rounded-2xl py-16 text-center">
+            <h2 className="text-lg font-black text-slate-800">Search unavailable</h2>
+            <p className="text-sm text-slate-500 mt-1">{error}</p>
+          </div>
+        ) : results.length === 0 ? (
           <div className="mt-8 bg-white border border-slate-200/80 rounded-2xl py-16 text-center">
             <FiSearch className="mx-auto h-12 w-12 text-slate-300 mb-3" />
             <h2 className="text-lg font-black text-slate-800">No results found</h2>

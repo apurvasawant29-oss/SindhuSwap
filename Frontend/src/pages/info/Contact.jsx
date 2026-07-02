@@ -1,4 +1,6 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { toast } from "react-toastify";
 import {
   FiArrowRight,
   FiCheckCircle,
@@ -16,6 +18,7 @@ import {
   FiYoutube,
 } from "react-icons/fi";
 import PageShell from "../../components/common/PageShell";
+import { contactApi } from "../../api/contactApi";
 import supportImage from "../../assets/images/team-member.jpg";
 import communityImage from "../../assets/images/community.jpg";
 
@@ -33,6 +36,25 @@ const supportCards = [
 ];
 
 function Contact() {
+  const [form, setForm] = useState({ name: "", email: "", subject: "", category: "", message: "" });
+  const [loading, setLoading] = useState(false);
+
+  const updateField = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      setLoading(true);
+      await contactApi.create(form);
+      toast.success("Message sent successfully.");
+      setForm({ name: "", email: "", subject: "", category: "", message: "" });
+    } catch (error) {
+      toast.error(error.message || "Unable to send message.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <PageShell>
       <section className="contact-hero container">
@@ -53,14 +75,14 @@ function Contact() {
       </section>
 
       <section className="contact-grid container">
-        <motion.form className="contact-panel" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+        <motion.form className="contact-panel" onSubmit={handleSubmit} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           <h2>Send us a message</h2>
-          <ContactField icon={FiUser} placeholder="Your Name" />
-          <ContactField icon={FiMail} placeholder="Email Address" />
-          <ContactField icon={FiTag} placeholder="Subject" />
+          <ContactField icon={FiUser} placeholder="Your Name" value={form.name} onChange={(value) => updateField("name", value)} />
+          <ContactField icon={FiMail} placeholder="Email Address" value={form.email} onChange={(value) => updateField("email", value)} />
+          <ContactField icon={FiTag} placeholder="Subject" value={form.subject} onChange={(value) => updateField("subject", value)} />
           <label className="contact-field">
             <FiTag />
-            <select defaultValue="">
+            <select value={form.category} onChange={(event) => updateField("category", event.target.value)}>
               <option value="" disabled>Select a Category</option>
               <option>Buying Support</option>
               <option>Selling Support</option>
@@ -70,9 +92,9 @@ function Contact() {
           </label>
           <label className="contact-field contact-field--textarea">
             <FiMail />
-            <textarea placeholder="Write your message here..." />
+            <textarea placeholder="Write your message here..." value={form.message} onChange={(event) => updateField("message", event.target.value)} />
           </label>
-          <button className="btn btn--primary" type="submit">Send Message <FiSend /></button>
+          <button className="btn btn--primary" type="submit" disabled={loading}>{loading ? "Sending..." : "Send Message"} <FiSend /></button>
           <small><FiCheckCircle /> We usually respond within 24 hours</small>
         </motion.form>
 
@@ -112,11 +134,11 @@ function Contact() {
   );
 }
 
-function ContactField({ icon: Icon, placeholder }) {
+function ContactField({ icon: Icon, placeholder, value, onChange }) {
   return (
     <label className="contact-field">
       <Icon />
-      <input placeholder={placeholder} />
+      <input placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }

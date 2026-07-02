@@ -3,25 +3,38 @@ import { FiHeart, FiStar, FiMapPin, FiMessageCircle, FiEye } from "react-icons/f
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState } from "react";
+import { wishlistApi } from "../../api/wishlistApi";
+import { useAuth } from "../../context/AuthContext";
 
 function ProductCard({ item }) {
   const [wishlisted, setWishlisted] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const navigate = useNavigate();
+  const { isUserAuthenticated } = useAuth();
 
-  const handleWishlist = (e) => {
+  const handleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    setWishlisted((prev) => {
-      const next = !prev;
-      if (next) {
-        toast.success("Added to Wishlist");
-      } else {
+    if (!isUserAuthenticated) {
+      toast.info("Please login to use wishlist.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (wishlisted) {
+        await wishlistApi.remove(item.id || item._id);
         toast.info("Removed from Wishlist");
+      } else {
+        await wishlistApi.add(item.id || item._id);
+        toast.success("Added to Wishlist");
       }
-      return next;
-    });
+      window.dispatchEvent(new Event("wishlist:changed"));
+      setWishlisted((prev) => !prev);
+    } catch (error) {
+      toast.error(error.message || "Wishlist action failed");
+    }
   };
 
   const handleChatClick = (e) => {
@@ -49,7 +62,7 @@ function ProductCard({ item }) {
         ? (item.image.includes("/") ? item.image : `/src/assets/${item.image}`) 
         : dummyImage)
     : dummyImage;
-  const isSwap = item.status === "Swap" || item.price === undefined;
+  const isSwap = item.status === "Swap" || item.productType === "Swap" || item.price === undefined;
 
   return (
     <motion.article
@@ -60,7 +73,7 @@ function ProductCard({ item }) {
       whileHover={{ y: -6 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <Link to={`/product/${item.id}`} className="flex flex-col h-full">
+      <Link to={`/product/${item.id || item._id}`} className="flex flex-col h-full">
         {/* Image Section */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
           {!imgLoaded && (
