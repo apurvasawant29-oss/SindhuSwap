@@ -1,75 +1,72 @@
 import { Link } from "react-router-dom";
-import { FiCheck, FiX, FiEye } from "react-icons/fi";
+import { FiCheck, FiEye, FiX } from "react-icons/fi";
 
 function ProductInfoCard({ product, onAcceptSwap, onRejectSwap }) {
   if (!product) return null;
 
-  const { name, owner, condition, swapStatus, id, image } = product;
-
-  const getStatusBadgeClass = () => {
-    switch (swapStatus?.toLowerCase()) {
-      case "accepted":
-        return "bg-emerald-50 text-emerald-750 border border-emerald-250";
-      case "rejected":
-        return "bg-rose-50 text-rose-700 border border-rose-200";
-      case "pending":
-      default:
-        return "bg-amber-50 text-amber-700 border border-amber-200";
-    }
-  };
+  const statusClass =
+    product.swapStatus === "Accepted"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : product.swapStatus === "Rejected"
+        ? "border-rose-200 bg-rose-50 text-rose-700"
+        : "border-amber-200 bg-amber-50 text-amber-700";
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-[0_2px_8px_rgba(15,23,42,0.01)] mx-4 my-3 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 shrink-0">
-      <div className="flex items-center gap-3">
-        {/* Product Image Thumbnail */}
-        <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-          {image ? (
-            <img src={image} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-xl">📚</span>
-          )}
-        </div>
-        <div>
-          <h4 className="text-sm font-bold text-slate-800 leading-snug">{name}</h4>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-500 mt-1 font-semibold">
-            <span>Owner: <strong className="text-slate-700">{owner}</strong></span>
-            <span className="text-slate-300">•</span>
-            <span>Condition: <span className="text-emerald-600 font-bold">{condition}</span></span>
-            <span className="text-slate-300">•</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadgeClass()}`}>
-              {swapStatus || "Pending"}
-            </span>
+    <div className="mx-4 mt-4 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="h-14 w-14 shrink-0 rounded-xl border border-slate-100 object-cover"
+          />
+          <div className="min-w-0">
+            <h3 className="truncate text-sm font-bold text-slate-900">{product.name}</h3>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-500">
+              <span>
+                Owner: <strong className="text-slate-700">{product.owner}</strong>
+              </span>
+              <span className="text-slate-300">•</span>
+              <span>
+                Condition: <strong className="text-teal-700">{product.condition}</strong>
+              </span>
+              <span className="text-slate-300">•</span>
+              <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>
+                {product.swapStatus}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <Link
-          to={`/product/${id || 1}`}
-          className="flex items-center gap-1 px-3 py-2 border border-slate-200 hover:border-slate-300 text-slate-650 hover:bg-slate-50 rounded-xl text-xs font-bold transition-all"
-        >
-          <FiEye className="h-3.5 w-3.5" />
-          <span>View Listing</span>
-        </Link>
-        
-        {swapStatus?.toLowerCase() === "pending" && (
-          <>
-            <button
-              onClick={onRejectSwap}
-              className="flex items-center gap-1 px-3 py-2 bg-rose-50 hover:bg-rose-100/80 text-rose-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
-            >
-              <FiX className="h-3.5 w-3.5" />
-              <span>Reject</span>
-            </button>
-            <button
-              onClick={onAcceptSwap}
-              className="flex items-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm shadow-emerald-600/10 cursor-pointer"
-            >
-              <FiCheck className="h-3.5 w-3.5" />
-              <span>Accept</span>
-            </button>
-          </>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to={`/product/${product.id}`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+          >
+            <FiEye className="h-3.5 w-3.5" />
+            View Product
+          </Link>
+          {product.swapStatus === "Pending" && (
+            <>
+              <button
+                type="button"
+                onClick={onRejectSwap}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100"
+              >
+                <FiX className="h-3.5 w-3.5" />
+                Reject Swap
+              </button>
+              <button
+                type="button"
+                onClick={onAcceptSwap}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3 py-2 text-xs font-bold text-white shadow-sm shadow-teal-600/15 transition hover:bg-teal-700"
+              >
+                <FiCheck className="h-3.5 w-3.5" />
+                Accept Swap
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

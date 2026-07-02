@@ -1,173 +1,141 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FiArrowLeft,
-  FiPhone,
-  FiVideo,
+  FiBookOpen,
   FiMoreVertical,
-  FiVolume2,
-  FiVolumeX,
-  FiTrash2,
+  FiPhone,
   FiSlash,
-  FiBookOpen
+  FiTrash2,
+  FiVideo,
 } from "react-icons/fi";
 
-function ChatHeader({
-  activeChat,
-  onBack,
-  onInitiateCall,
-  onClearChat,
-  onToggleMute,
-  onBlockUser
-}) {
-  const [showMenu, setShowMenu] = useState(false);
+function ChatHeader({ activeChat, onBack, onInitiateCall, onClearChat, onBlockUser }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Click outside listener
   useEffect(() => {
-    function handleClickOutside(event) {
+    const closeMenu = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowMenu(false);
+        setIsMenuOpen(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    };
+
+    document.addEventListener("mousedown", closeMenu);
+    return () => document.removeEventListener("mousedown", closeMenu);
   }, []);
 
-  if (!activeChat) return null;
-
   return (
-    <div className="p-3.5 bg-white border-b border-slate-100 flex items-center justify-between shrink-0 shadow-sm z-30">
-      <div className="flex items-center gap-3 min-w-0">
-        {/* Mobile Back Button */}
+    <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-100 bg-white p-3.5 shadow-sm">
+      <div className="flex min-w-0 items-center gap-3">
         <button
+          type="button"
           onClick={onBack}
-          className="md:hidden p-1.5 rounded-lg hover:bg-slate-50 text-slate-650 transition-colors cursor-pointer shrink-0"
-          aria-label="Back to chat list"
+          className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 md:hidden"
+          aria-label="Back to conversations"
         >
           <FiArrowLeft className="h-5 w-5" />
         </button>
 
-        {/* User Profile Avatar */}
-        <div className="relative shrink-0 select-none">
+        <div className="relative shrink-0">
           {activeChat.avatar ? (
             <img
               src={activeChat.avatar}
               alt={activeChat.name}
-              className="w-10 h-10 rounded-xl object-cover shadow-sm border border-slate-100"
+              className="h-11 w-11 rounded-xl border border-slate-100 object-cover shadow-sm"
             />
           ) : (
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${activeChat.avatarColor || "from-emerald-500 to-teal-400"} text-white flex items-center justify-center text-sm font-extrabold shadow-sm`}>
-              {activeChat.name.charAt(0).toUpperCase()}
+            <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-600 to-emerald-500 text-sm font-extrabold text-white shadow-sm">
+              {activeChat.name.charAt(0)}
             </div>
           )}
           {activeChat.isOnline && (
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white shadow-sm animate-pulse" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
           )}
         </div>
 
-        {/* Title Details */}
         <div className="min-w-0">
-          <h2 className="text-sm font-bold text-slate-800 leading-tight truncate">
-            {activeChat.name}
-          </h2>
-          <div className="flex items-center gap-1.5 mt-0.5 truncate">
-            <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">
-              {activeChat.isOnline ? "Online" : activeChat.lastSeen || "Offline"}
+          <h2 className="truncate text-sm font-bold text-slate-900">{activeChat.name}</h2>
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] font-semibold text-slate-400">
+            <span className={activeChat.isOnline ? "text-emerald-600" : ""}>
+              {activeChat.isOnline ? "Online" : activeChat.lastSeen}
             </span>
-            {activeChat.productName && (
-              <>
-                <span className="text-slate-300 text-[10px]">•</span>
-                <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 truncate">
-                  <FiBookOpen className="h-3 w-3 inline" />
-                  {activeChat.productName}
-                </span>
-              </>
-            )}
+            <span className="text-slate-300">•</span>
+            <span className="flex min-w-0 items-center gap-1 text-teal-700">
+              <FiBookOpen className="h-3 w-3 shrink-0" />
+              <span className="truncate">{activeChat.productName}</span>
+            </span>
+            <span className="hidden rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 sm:inline">
+              Swap Requested
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Header Icons and Dropdown Menu */}
-      <div className="flex items-center gap-1 text-slate-400 relative shrink-0" ref={menuRef}>
+      <div className="relative flex shrink-0 items-center gap-1 text-slate-400" ref={menuRef}>
         <button
+          type="button"
           onClick={() => onInitiateCall("voice")}
-          className="p-2 rounded-xl hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+          className="rounded-xl p-2 transition hover:bg-slate-50 hover:text-slate-700"
+          aria-label="Voice call"
           title="Voice call"
         >
-          <FiPhone className="h-4.5 w-4.5" />
+          <FiPhone className="h-[18px] w-[18px]" />
         </button>
         <button
+          type="button"
           onClick={() => onInitiateCall("video")}
-          className="p-2 rounded-xl hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+          className="rounded-xl p-2 transition hover:bg-slate-50 hover:text-slate-700"
+          aria-label="Video call"
           title="Video call"
         >
-          <FiVideo className="h-4.5 w-4.5" />
+          <FiVideo className="h-[18px] w-[18px]" />
         </button>
-
         <button
-          onClick={() => setShowMenu((p) => !p)}
-          className="p-2 rounded-xl hover:bg-slate-50 hover:text-slate-600 transition-colors cursor-pointer"
+          type="button"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          className="rounded-xl p-2 transition hover:bg-slate-50 hover:text-slate-700"
+          aria-label="More options"
           title="More options"
         >
-          <FiMoreVertical className="h-4.5 w-4.5" />
+          <FiMoreVertical className="h-[18px] w-[18px]" />
         </button>
 
-        {/* Dropdown Menu */}
         <AnimatePresence>
-          {showMenu && (
+          {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: 8, scale: 0.95 }}
+              initial={{ opacity: 0, y: 8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-0 top-11 w-44 bg-white border border-slate-200 shadow-xl rounded-xl p-1.5 z-40"
+              exit={{ opacity: 0, y: 8, scale: 0.96 }}
+              className="absolute right-0 top-11 z-30 w-44 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-600 shadow-xl"
             >
               <button
-                onClick={() => {
-                  onToggleMute();
-                  setShowMenu(false);
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-lg text-left cursor-pointer transition-colors"
-              >
-                {activeChat.isMuted ? (
-                  <>
-                    <FiVolume2 className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Unmute Notifications</span>
-                  </>
-                ) : (
-                  <>
-                    <FiVolumeX className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Mute Notifications</span>
-                  </>
-                )}
-              </button>
-              <button
+                type="button"
                 onClick={() => {
                   onClearChat();
-                  setShowMenu(false);
+                  setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 rounded-lg text-left cursor-pointer transition-colors"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition hover:bg-slate-50"
               >
                 <FiTrash2 className="h-3.5 w-3.5 text-slate-400" />
-                <span>Clear Chat History</span>
+                Clear chat
               </button>
-              <div className="border-t border-slate-100 my-1" />
               <button
+                type="button"
                 onClick={() => {
                   onBlockUser();
-                  setShowMenu(false);
+                  setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg text-left cursor-pointer transition-colors"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-rose-600 transition hover:bg-rose-50"
               >
-                <FiSlash className="h-3.5 w-3.5 text-rose-500" />
-                <span>Block {activeChat.name}</span>
+                <FiSlash className="h-3.5 w-3.5" />
+                Block user
               </button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </header>
   );
 }
 

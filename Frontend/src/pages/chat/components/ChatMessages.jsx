@@ -5,7 +5,6 @@ import MessageBubble from "./MessageBubble";
 function ChatMessages({ messages, isTyping, onImageClick }) {
   const scrollRef = useRef(null);
 
-  // Auto-scroll on mount, change in messages, or typing status
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -13,57 +12,41 @@ function ChatMessages({ messages, isTyping, onImageClick }) {
   }, [messages, isTyping]);
 
   return (
-    <div
-      ref={scrollRef}
-      className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/20"
-      style={{ scrollbarWidth: "thin" }}
-    >
-      {messages.length === 0 ? (
-        <div className="text-center py-12 text-slate-400 text-xs">
-          <span>No messages yet. Start the conversation!</span>
-        </div>
-      ) : (
-        messages.map((msg, index) => {
-          const isMe = msg.sender === "me";
-          const prevMsg = index > 0 ? messages[index - 1] : null;
-          
-          // Show date divider if it is the first message or if the dateGroup changed
-          const showDateDivider = !prevMsg || prevMsg.dateGroup !== msg.dateGroup;
-          
-          // Group consecutive messages from the same sender (within a short window)
-          const isConsecutive = prevMsg && prevMsg.sender === msg.sender && !showDateDivider;
+    <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-slate-50/30 p-4">
+      {messages.map((message, index) => {
+        const previous = messages[index - 1];
+        const showDate = !previous || previous.dateGroup !== message.dateGroup;
+        const isConsecutive = previous?.sender === message.sender && !showDate;
 
-          return (
-            <div key={msg.id || index} className="flex flex-col">
-              {showDateDivider && msg.dateGroup && (
-                <div className="flex justify-center my-3 shrink-0">
-                  <span className="px-3 py-1 bg-slate-100 text-slate-400 border border-slate-200/40 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                    {msg.dateGroup}
-                  </span>
-                </div>
-              )}
-              <MessageBubble
-                message={msg}
-                isMe={isMe}
-                isConsecutive={isConsecutive}
-                onImageClick={onImageClick}
-              />
-            </div>
-          );
-        })
-      )}
+        return (
+          <div key={message.id}>
+            {showDate && (
+              <div className="my-3 flex justify-center">
+                <span className="rounded-full border border-slate-200/70 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 shadow-sm">
+                  {message.dateGroup}
+                </span>
+              </div>
+            )}
+            <MessageBubble
+              message={message}
+              isMe={message.sender === "me"}
+              isConsecutive={isConsecutive}
+              onImageClick={onImageClick}
+            />
+          </div>
+        );
+      })}
 
-      {/* Typing indicator */}
       {isTyping && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-start shrink-0 mt-2"
+          className="flex justify-start"
         >
-          <div className="bg-white border border-slate-200/50 rounded-2xl rounded-tl-none px-3.5 py-2.5 flex items-center gap-1.5 shadow-sm">
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+          <div className="flex items-center gap-1.5 rounded-2xl rounded-tl-none border border-slate-200/80 bg-white px-4 py-3 shadow-sm">
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-500" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-500 [animation-delay:140ms]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-emerald-500 [animation-delay:280ms]" />
           </div>
         </motion.div>
       )}
