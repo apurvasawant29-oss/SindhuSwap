@@ -384,3 +384,100 @@
 {"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T16:21:22.686Z"}
 {"level":"error","message":"Route not found: /api/v1/auth/login","meta":{"stack":"Error: Route not found: /api/v1/auth/login\n    at notFound (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\src\\middlewares\\error.middleware.js:7:8)\n    at Layer.handleRequest (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:342:13)\n    at C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:582:12)\n    at next (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:291:5)\n    at C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:688:15\n    at next (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:276:14)\n    at C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:688:15\n    at next (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:276:14)","errors":[]},"timestamp":"2026-07-02T16:21:41.552Z"}
 {"level":"error","message":"Route not found: /api/v1/auth/login","meta":{"stack":"Error: Route not found: /api/v1/auth/login\n    at notFound (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\src\\middlewares\\error.middleware.js:7:8)\n    at Layer.handleRequest (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\lib\\layer.js:152:17)\n    at trimPrefix (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:342:13)\n    at C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:297:9\n    at processParams (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:582:12)\n    at next (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:291:5)\n    at C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:688:15\n    at next (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:276:14)\n    at C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:688:15\n    at next (C:\\updated_xampp\\htdocs\\SindhuSwap\\Backend\\node_modules\\router\\index.js:276:14)","errors":[]},"timestamp":"2026-07-02T16:21:44.007Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:01:31.393Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:01:31.397Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:01:31.399Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:01:32.497Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:01:32.499Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:01:32.501Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:01:32.550Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:01:32.643Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:01:33.769Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:13:29.812Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:13:29.814Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:13:29.814Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:13:30.837Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:13:30.837Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:13:30.847Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:13:30.838Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:13:30.878Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:13:31.302Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:16:10.063Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:16:10.065Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:16:10.066Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:16:11.087Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:16:11.095Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:16:11.088Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:16:11.088Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:16:11.118Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:16:11.556Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:22:07.826Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:22:07.830Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:22:07.831Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:22:08.878Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:22:08.879Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:22:08.897Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:22:08.880Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:22:08.942Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:22:09.437Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:25:02.928Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net"},"timestamp":"2026-07-02T18:25:02.931Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:25:02.931Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:25:03.940Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:25:03.941Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:25:03.941Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net"},"timestamp":"2026-07-02T18:25:03.960Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:25:04.010Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:25:04.557Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:26:02.348Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:26:02.351Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net"},"timestamp":"2026-07-02T18:26:02.351Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:26:03.361Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:26:03.361Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:26:03.361Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv EBADNAME _mongodb._tcp.<correct-cluster-host>.mongodb.net"},"timestamp":"2026-07-02T18:26:03.372Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:26:03.412Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:26:04.023Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:34:04.607Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:34:04.608Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:34:04.609Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:34:05.623Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:34:05.623Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:34:05.624Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:34:05.628Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:34:05.645Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:34:05.925Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:38:48.505Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":0},"timestamp":"2026-07-02T18:38:48.506Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:38:48.507Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:38:49.528Z"}
+{"level":"error","message":"MongoDB connection failed","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","retryCount":1},"timestamp":"2026-07-02T18:38:49.528Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:38:49.528Z"}
+{"level":"error","message":"MongoDB connection error","meta":{"message":"querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net"},"timestamp":"2026-07-02T18:38:49.535Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:38:49.556Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:38:49.832Z"}
+{"level":"info","message":"Attempting MongoDB connection (attempt 1) to host: aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:43:54.436Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:43:54.459Z"}
+{"level":"error","message":"MongoDB connection error: querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:43:54.466Z"}
+{"level":"error","message":"MongoDB connection failed: Error - querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:43:54.462Z"}
+{"level":"info","message":"Attempting MongoDB connection (attempt 2) to host: aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:43:55.477Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:43:55.491Z"}
+{"level":"error","message":"MongoDB connection failed: Error - querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:43:55.492Z"}
+{"level":"error","message":"MongoDB connection error: querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:43:55.499Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:43:55.493Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:43:55.511Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:43:55.795Z"}
+{"level":"info","message":"Attempting MongoDB connection (attempt 1) to host: aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:44:08.777Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:44:08.787Z"}
+{"level":"error","message":"MongoDB connection failed: Error - querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:44:08.787Z"}
+{"level":"error","message":"MongoDB connection error: querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:44:08.789Z"}
+{"level":"info","message":"Attempting MongoDB connection (attempt 2) to host: aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:44:09.802Z"}
+{"level":"warn","message":"MongoDB connection disconnected","meta":{},"timestamp":"2026-07-02T18:44:09.817Z"}
+{"level":"error","message":"MongoDB connection failed: Error - querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:44:09.818Z"}
+{"level":"warn","message":"Falling back to local MongoDB instance: mongodb://127.0.0.1:27017/sindhuswap","meta":{},"timestamp":"2026-07-02T18:44:09.827Z"}
+{"level":"error","message":"MongoDB connection error: querySrv ECONNREFUSED _mongodb._tcp.aps.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:44:09.852Z"}
+{"level":"info","message":"MongoDB connected (Fallback Local): 127.0.0.1","meta":{},"timestamp":"2026-07-02T18:44:09.896Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:44:10.203Z"}
+{"level":"info","message":"Attempting MongoDB connection (attempt 1) to host: ac-cx52vtp-shard-00-00.ksmdn3x.mongodb.net:27017,ac-cx52vtp-shard-00-01.ksmdn3x.mongodb.net:27017,ac-cx52vtp-shard-00-02.ksmdn3x.mongodb.net:27017","meta":{},"timestamp":"2026-07-02T18:49:53.997Z"}
+{"level":"info","message":"MongoDB connected: ac-cx52vtp-shard-00-00.ksmdn3x.mongodb.net","meta":{},"timestamp":"2026-07-02T18:49:54.270Z"}
+{"level":"info","message":"Server running in development mode on port 5000","meta":{},"timestamp":"2026-07-02T18:49:54.749Z"}
