@@ -93,7 +93,7 @@ function CategoryTile({ category }) {
   const Icon = category.icon;
   return (
     <motion.div whileHover={{ y: -8 }}>
-      <Link className="category-tile block" to={`/categories/${category.name.toLowerCase().replaceAll(" ", "-")}`}>
+      <Link className="category-tile block" to={`/category/${category.name.toLowerCase().replaceAll(" & ", "-").replaceAll(" ", "-")}`}>
         <img src={category.image} alt={category.name} />
         <div>
           <h3>{category.name}</h3>

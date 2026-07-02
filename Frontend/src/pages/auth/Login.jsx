@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiShield, FiMail, FiLock, FiArrowRight } from "react-icons/fi";
 import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState("user"); // 'user' or 'admin'
   const navigate = useNavigate();
+  const location = useLocation();
+  const { loginUser, loginAdmin } = useAuth();
 
   // User form states
   const [userEmail, setUserEmail] = useState("");
@@ -19,30 +22,32 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle standard user mock login
-  const handleUserLogin = (e) => {
+  const handleUserLogin = async (e) => {
     e.preventDefault();
-    if (userEmail && userPassword) {
+    try {
+      setIsLoading(true);
+      await loginUser({ email: userEmail, password: userPassword });
       toast.success("Logged in successfully as user!");
-      localStorage.setItem("userAuth", "true");
-      navigate("/profile");
-    } else {
-      toast.error("Please fill in all user login credentials.");
+      navigate(location.state?.from?.pathname || "/", { replace: true });
+    } catch (error) {
+      toast.error(error.message || "Please fill in all user login credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle temporary Admin login validation
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
-    if (adminUsername === "admin" && adminPassword === "12345") {
+    try {
       setIsLoading(true);
+      await loginAdmin({ username: adminUsername, password: adminPassword });
       toast.success("Welcome back, Administrator!");
-      localStorage.setItem("adminAuth", "true");
-      setTimeout(() => {
-        navigate("/admin");
-        setIsLoading(false);
-      }, 800);
-    } else {
-      toast.error("Invalid administrator credentials. Access Denied.");
+      navigate("/admin/dashboard", { replace: true });
+    } catch (error) {
+      toast.error(error.message || "Invalid administrator credentials. Access Denied.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -142,9 +147,10 @@ export default function Login() {
 
                   <button
                     type="submit"
+                    disabled={isLoading}
                     className="w-full py-3 bg-primary hover:bg-teal-800 text-white font-bold rounded-xl transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5 mt-2"
                   >
-                    Login User <FiArrowRight />
+                    {isLoading ? "Signing in..." : "Login User"} <FiArrowRight />
                   </button>
                 </motion.form>
               ) : (

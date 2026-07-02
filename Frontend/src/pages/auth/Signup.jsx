@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiMail, FiPhone, FiLock, FiArrowRight, FiCheckCircle } from "react-icons/fi";
 import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
+import { useAuth } from "../../context/AuthContext";
 
 const TALUKAS = [
   "Select Taluka",
@@ -30,6 +31,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { registerUser } = useAuth();
 
   // Password strength meter calculation
   const calculatePasswordStrength = (pass) => {
@@ -79,22 +81,23 @@ export default function Signup() {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setLoading(true);
-    // Simulate API request
-    setTimeout(() => {
+    try {
+      await registerUser({ name: fullName, email, mobile, password, taluka });
       setLoading(false);
       setSuccess(true);
       toast.success("Account created successfully!");
-      
-      // Redirect to signin after animations
       setTimeout(() => {
-        navigate("/signin");
+        navigate("/login");
       }, 1500);
-    }, 1200);
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.message || "Unable to create account.");
+    }
   };
 
   return (
@@ -372,9 +375,9 @@ export default function Signup() {
                 {/* Login Redirect */}
                 <div className="text-center text-xs text-slate-500 font-medium mt-6 border-t border-slate-100 pt-4">
                   Already have an account?{" "}
-                  <Link to="/signin" className="text-teal-650 font-bold hover:text-teal-800 hover:underline">
-                    Sign In
-                  </Link>
+              <Link to="/login" className="text-teal-650 font-bold hover:text-teal-800 hover:underline">
+                Sign In
+              </Link>
                 </div>
               </motion.div>
             ) : (

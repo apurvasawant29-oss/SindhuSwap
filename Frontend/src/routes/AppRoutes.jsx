@@ -33,9 +33,15 @@ import HelpCenterUser from "../pages/info/HelpCenter";
 import NotFound from "../pages/NotFound";
 import AddProduct from "../pages/product/AddProduct";
 import CategoriesUser from "../pages/product/Categories";
+import CategoryPage from "../pages/product/CategoryPage";
 import ProductDetails from "../pages/product/ProductDetails";
+import SearchResults from "../pages/product/SearchResults";
 import Profile from "../pages/profile/Profile";
 import Wishlist from "../pages/profile/Wishlist";
+import UserNotifications from "../pages/notifications/Notifications";
+import Inbox from "../pages/chat/Inbox";
+import MyListings from "../pages/product/MyListings";
+import Settings from "../pages/profile/Settings";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 
@@ -51,17 +57,26 @@ function AppRoutes() {
         <Route path="/about" element={<About />} />
         <Route path="/help-center" element={<HelpCenterUser />} />
         <Route path="/categories" element={<CategoriesUser />} />
+        <Route path="/category/:categoryName" element={<CategoryPage />} />
+        <Route path="/categories/:categoryName" element={<CategoryPage />} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/search" element={<SearchResults />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/notifications" element={<UserNotifications />} />
+          <Route path="/messages" element={<Inbox />} />
+          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/my-products" element={<MyListings />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         <Route element={<AdminRoute />}>
           <Route element={<AdminProvider><AdminLayout /></AdminProvider>}>
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/analytics" element={<Analytics />} />
             <Route path="/admin/products" element={<Products />} />
             <Route path="/admin/books" element={<Books />} />

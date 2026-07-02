@@ -137,7 +137,7 @@ function SearchBar() {
   // Flattened suggestions helper for keyboard navigation
   const getFlatSuggestions = useCallback(() => {
     const list = [];
-    suggestions.categories.forEach((c) => list.push({ type: "category", label: c.name, target: `/categories` }));
+    suggestions.categories.forEach((c) => list.push({ type: "category", label: c.name, target: `/category/${c.name.toLowerCase().replaceAll(" & ", "-").replaceAll(" ", "-")}` }));
     suggestions.users.forEach((u) => list.push({ type: "user", label: u.name, target: `/profile` }));
     suggestions.books.forEach((b) => list.push({ type: "book", label: b.name, target: `/product/${b.id}` }));
     suggestions.products.forEach((p) => list.push({ type: "product", label: p.name, target: `/product/${p.id}` }));
@@ -170,8 +170,7 @@ function SearchBar() {
       } else if (query.trim()) {
         saveSearch(query);
         setIsOpen(false);
-        // Fallback search navigation: go to categories with search query
-        navigate(`/categories?search=${encodeURIComponent(query)}`);
+        navigate(`/search?q=${encodeURIComponent(query)}`);
         setQuery("");
       }
     } else if (e.key === "Escape") {
@@ -205,7 +204,7 @@ function SearchBar() {
           if (query.trim()) {
             saveSearch(query);
             setIsOpen(false);
-            navigate(`/categories?search=${encodeURIComponent(query)}`);
+            navigate(`/search?q=${encodeURIComponent(query)}`);
             setQuery("");
           }
         }}
@@ -292,7 +291,7 @@ function SearchBar() {
                             return (
                               <li
                                 key={cat.name}
-                                onClick={() => handleSelect({ label: cat.name, target: `/categories` })}
+                                onClick={() => handleSelect({ label: cat.name, target: `/category/${cat.name.toLowerCase().replaceAll(" & ", "-").replaceAll(" ", "-")}` })}
                                 className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs cursor-pointer transition-colors ${
                                   activeIndex === flatIdx
                                     ? "bg-slate-50 text-teal-700 font-medium"

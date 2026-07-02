@@ -1,8 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function AdminRoute() {
-  const isAdminAuth = localStorage.getItem("adminAuth") === "true";
-  return isAdminAuth ? <Outlet /> : <Navigate to="/login" replace />;
+  const { isAdminAuthenticated } = useAuth();
+  return isAdminAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 export default AdminRoute;
