@@ -160,14 +160,14 @@ function ProfileHeader({ onEdit }) {
       <img className="profile-header__cover" src={coverImage} alt="" />
       <div className="profile-header__content">
         <div className="profile-photo-wrap">
-          <img src={profileImage} alt="Apurva Patil" />
+          <img src={profileImage} alt="Apurva Sawant" />
           <button aria-label="Change profile photo"><FiCamera /></button>
         </div>
         <div>
-          <h1>Apurva Patil <FiCheckCircle /></h1>
-          <p>@apurva07</p>
+          <h1>Apurva Sawant <FiCheckCircle /></h1>
+          <p>apurvasawant29@gmail.com</p>
           <span><FiMapPin /> Sawantwadi, Sindhudurg</span>
-          <span>Member since May 2024</span>
+          <span>Member since July 2026</span>
         </div>
         <button className="btn btn--light" type="button" onClick={onEdit}><FiEdit3 /> Edit Profile</button>
       </div>
@@ -231,13 +231,13 @@ function EditProfilePanel() {
     <motion.section className="profile-section profile-form-panel" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
       <div className="section-header"><h2>Edit Profile</h2></div>
       <div className="edit-profile-hero">
-        <img src={profileImage} alt="Apurva Patil" />
+        <img src={profileImage} alt="Apurva Sawant" />
         <button className="btn btn--light btn--border" type="button"><FiCamera /> Change Photo</button>
       </div>
       <div className="profile-form-grid">
-        <label><span>Full Name</span><input defaultValue="Apurva Patil" /></label>
-        <label><span>Email</span><input defaultValue="apurva07@gmail.com" /></label>
-        <label><span>Phone</span><input defaultValue="+91 98765 43210" /></label>
+        <label><span>Full Name</span><input defaultValue="Apurva Sawant" /></label>
+        <label><span>Email</span><input defaultValue="apurvasawant29@gmail.com" /></label>
+        <label><span>Phone</span><input defaultValue="+91 9420105073" /></label>
         <label><span>Taluka</span><select defaultValue="Sawantwadi"><option>Sawantwadi</option><option>Kudal</option><option>Malvan</option></select></label>
         <label className="profile-form-grid__full"><span>Bio</span><textarea defaultValue="I love books, minimal living, and helping my community by buying, selling, and swapping second-hand items." /></label>
       </div>

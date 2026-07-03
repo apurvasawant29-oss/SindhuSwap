@@ -1,4 +1,5 @@
 const express = require("express");
+const swapRoutes = require("./swap.routes");
 const authRoutes = require("./auth.routes");
 const userRoutes = require("./user.routes");
 const adminRoutes = require("./admin.routes");
@@ -17,6 +18,7 @@ router.get("/health", (_req, res) =>
   sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.HEALTH_OK)
 );
 
+router.use("/swap", swapRoutes);
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/admin", adminRoutes);

@@ -31,9 +31,9 @@ const values = [
 ];
 
 const team = [
-  { name: "Apurva Sawant", role: "Frontend Developer", image: appu },
-  { name: "Gauri Sawant", role: "Backend Developer", image: gauri },
-  { name: "Shweta Parab", role: "UI/UX Designer", image: shweta },
+  { name: "Apurva Sawant", role: "Backend Developer", image: appu },
+  { name: "Gauri Sawant", role: "Frontend Developer & UI/UX Designer", image: gauri },
+  { name: "Shweta Parab", role: "Database Designer", image: shweta },
 ];
 
 const faqs = [
