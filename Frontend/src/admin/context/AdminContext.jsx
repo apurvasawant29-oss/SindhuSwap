@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { adminApi } from "../../api/adminApi";
 import { contactApi } from "../../api/contactApi";
 
@@ -33,6 +33,7 @@ export default function AdminProvider({ children }) {
   const [orders, setOrders] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [categoryRecords, setCategoryRecords] = useState([]);
   const [talukas, setTalukas] = useState(TALUKAS);
   const [banners, setBanners] = useState([]);
   const [ads, setAds] = useState([]);
@@ -76,7 +77,11 @@ export default function AdminProvider({ children }) {
 
     if (productsResponse.status === "fulfilled") setProducts(productsResponse.value.data.products || []);
     if (usersResponse.status === "fulfilled") setUsers(usersResponse.value.data.users || []);
-    if (categoriesResponse.status === "fulfilled") setCategories((categoriesResponse.value.data.categories || []).map((item) => item.name || item));
+    if (categoriesResponse.status === "fulfilled") {
+      const records = categoriesResponse.value.data.categories || [];
+      setCategoryRecords(records);
+      setCategories(records.map((item) => item.name || item));
+    }
     if (messagesResponse.status === "fulfilled") setMessages((messagesResponse.value.data.messages || []).map(normalizeMessage));
     if (reviewsResponse.status === "fulfilled") setReviews(reviewsResponse.value.data.reviews || []);
     if (reportsResponse.status === "fulfilled") setReports(reportsResponse.value.data.reports || []);
@@ -125,13 +130,25 @@ export default function AdminProvider({ children }) {
   };
 
   const addCategory = async (name) => {
-    await adminApi.createCategory({ name });
-    setCategories((current) => [...new Set([...current, name])]);
+    const response = await adminApi.createCategory({ name });
+    const category = response.data.category;
+    setCategoryRecords((current) => [...current, category]);
+    setCategories((current) => [...new Set([...current, category.name])]);
   };
   const editCategory = async (oldName, newName) => {
+    const category = categoryRecords.find((item) => item.name === oldName);
+    if (category?._id) {
+      const response = await adminApi.updateCategory(category._id, { name: newName });
+      setCategoryRecords((current) => current.map((item) => (item._id === category._id ? response.data.category : item)));
+    }
     setCategories((current) => current.map((item) => (item === oldName ? newName : item)));
   };
   const deleteCategory = async (name) => {
+    const category = categoryRecords.find((item) => item.name === name);
+    if (category?._id) {
+      await adminApi.deleteCategory(category._id);
+      setCategoryRecords((current) => current.filter((item) => item._id !== category._id));
+    }
     setCategories((current) => current.filter((item) => item !== name));
   };
 
@@ -224,7 +241,8 @@ export default function AdminProvider({ children }) {
     markAllNotificationsRead,
     clearNotification,
     refreshAdminData: loadAdminData,
-  }), [products, users, bookSwaps, reviews, reports, orders, transactions, categories, talukas, banners, ads, blogs, messages, activityLogs, settings, adminNotifications]);
+  }), [products, users, bookSwaps, reviews, reports, orders, transactions, categories, categoryRecords, talukas, banners, ads, blogs, messages, activityLogs, settings, adminNotifications]);
 
   return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
 }
+

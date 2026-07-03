@@ -90,11 +90,9 @@ export default function ProductCarousel({
               return (
                 <div
                   key={item.id}
-                  className="opacity-0 pointer-events-none select-none"
+                  className="min-h-[420px] opacity-0 pointer-events-none select-none"
                   aria-hidden="true"
-                >
-                  <ProductCard item={items[0] || {}} />
-                </div>
+                />
               );
             }
             return <ProductCard key={item.id} item={item} />;

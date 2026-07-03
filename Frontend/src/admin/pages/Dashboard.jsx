@@ -18,6 +18,7 @@ import {
   FiActivity
 } from "react-icons/fi";
 import { useAdmin } from "../context/AdminContext";
+import { getProductImageSrc } from "../../utils/productImage";
 import StatsCard from "../components/common/StatsCard";
 import AreaChart from "../components/charts/AreaChart";
 import BarChart from "../components/charts/BarChart";
@@ -261,7 +262,7 @@ export default function Dashboard() {
                       .map((p) => (
                         <tr key={p.id} className="hover:bg-slate-50 border-b border-slate-50">
                           <td className="py-3 flex items-center gap-2">
-                            <img src={p.image} className="w-7 h-7 rounded border border-slate-100 object-cover" alt="" />
+                            <img src={getProductImageSrc(p)} className="w-7 h-7 rounded border border-slate-100 object-cover" alt="" />
                             <span className="font-semibold text-slate-700">{p.name}</span>
                           </td>
                           <td className="py-3 text-slate-500">{p.category}</td>

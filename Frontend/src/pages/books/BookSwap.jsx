@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FiBookOpen,
@@ -22,6 +22,7 @@ import teamMember from "../../assets/images/team-member.jpg";
 import { productApi } from "../../api/productApi";
 import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
+import { getProductImageSrc } from "../../utils/productImage";
 
 const benefits = [
   { title: "Save Money", text: "Get books for free by swapping.", icon: FiRefreshCw },
@@ -61,7 +62,8 @@ function BookSwap() {
         });
 
         setBooks(response.data.products || []);
-        setPagination(response.data.pagination || { page: 1, limit: 8, totalPages: 1, totalItems: 0 });
+        const nextPagination = response.data.pagination || { page: 1, limit: 8, totalPages: 1, total: 0 };
+        setPagination({ ...nextPagination, totalItems: nextPagination.totalItems ?? nextPagination.total ?? 0 });
         setError("");
       } catch (err) {
         setError(err.message || "Unable to load books right now.");
@@ -73,7 +75,7 @@ function BookSwap() {
     loadBooks();
   }, [category, condition, page, search]);
 
-  const totalItems = useMemo(() => pagination.totalItems || books.length, [books.length, pagination.totalItems]);
+  const totalItems = useMemo(() => pagination.totalItems ?? pagination.total ?? books.length, [books.length, pagination.total, pagination.totalItems]);
 
   return (
     <PageShell>
@@ -217,7 +219,7 @@ function BookCard({ book, onSelect, isAuthenticated }) {
   return (
     <motion.article className="book-card group" whileHover={{ y: -6 }}>
       <div className="book-card__cover">
-        <img src={book.image || book.images?.[0]?.url || ""} alt={`${book.title} cover`} />
+        <img src={getProductImageSrc(book)} alt={`${book.title} cover`} />
         <span>{book.status || "Available"}</span>
         <button 
           aria-label={`Save ${book.title}`} 
@@ -290,7 +292,7 @@ function BookDetailModal({ book, onClose, isAuthenticated }) {
           <FiX />
         </button>
         <div className="book-detail-cover">
-          <img src={book.image || book.images?.[0]?.url || ""} alt={`${book.title} cover`} />
+          <img src={getProductImageSrc(book)} alt={`${book.title} cover`} />
           <span>{book.status || "Available"}</span>
         </div>
         <div className="book-detail-content">
@@ -328,9 +330,11 @@ function TimelineStep({ step, index }) {
         <h3>{step.title}</h3>
         <p>{step.text}</p>
       </div>
-      {index < 2 && <strong>→</strong>}
+      {index < 2 && <strong>â†’</strong>}
     </article>
   );
 }
 
 export default BookSwap;
+
+

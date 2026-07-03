@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiPhoneOff, FiSearch } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
 import appuAvatar from "../../assets/appu.png";
 import shwetaAvatar from "../../assets/shweta.png";
 import priyaAvatar from "../../assets/gauri.png";
-import bookImage from "../../assets/Books/atomic.jpg";
-import laptopImage from "../../assets/images/book-cover.jpg";
-import chairImage from "../../assets/sawantwadi.jpg";
 import PageShell from "../../components/common/PageShell";
 import ChatHeader from "./components/ChatHeader";
 import ChatInput from "./components/ChatInput";
@@ -18,6 +16,7 @@ import QuickReplies from "./components/QuickReplies";
 
 import { messageApi } from "../../api/messageApi";
 import { useAuth } from "../../context/AuthContext";
+import { getProductImageSrc } from "../../utils/productImage";
 
 function Inbox() {
   const [conversations, setConversations] = useState([]);
@@ -29,27 +28,29 @@ function Inbox() {
   const [activeCall, setActiveCall] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const requestedConversationId = searchParams.get("conversationId");
 
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const res = await messageApi.getContacts();
-        const apiContacts = res.data?.contacts || [];
-        const mapped = apiContacts.map(c => ({
-          id: c._id,
+        const res = await messageApi.getConversations();
+        const apiConversations = res.data?.conversations || res.data?.contacts || [];
+        const mapped = apiConversations.map(c => ({
+          id: c.id || c._id,
           name: c.name,
-          avatar: c.profileImage,
+          avatar: c.avatar || c.profileImage,
           isOnline: false,
-          lastSeen: "Offline",
-          unreadCount: c.unread,
-          productName: "General Chat", // Adjust based on your schema
-          productImage: null,
-          product: null,
+          lastSeen: c.lastSeen || "Offline",
+          unreadCount: c.unreadCount || c.unread || 0,
+          productName: c.productName || c.product?.name || "Product Chat",
+          productImage: getProductImageSrc(c.productImage || c.product),
+          product: c.product,
           messages: []
         }));
         setConversations(mapped);
         if (mapped.length > 0) {
-          setSelectedId(mapped[0].id);
+          setSelectedId(requestedConversationId || mapped[0].id);
         }
       } catch (err) {
         console.error("Failed to fetch contacts", err);
@@ -58,7 +59,7 @@ function Inbox() {
       }
     };
     fetchContacts();
-  }, []);
+  }, [requestedConversationId]);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -68,8 +69,8 @@ function Inbox() {
         const apiMsgs = res.data?.messages || [];
         const formattedMsgs = apiMsgs.map(m => ({
           id: m._id,
-          sender: m.sender === user?._id || m.sender === user?.id ? "me" : "them",
-          text: m.content,
+          sender: m.sender === "me" || m.senderId === user?._id || m.senderId === user?.id ? "me" : "them",
+          text: m.content || m.text,
           type: "text",
           time: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           dateGroup: new Date(m.createdAt).toLocaleDateString(),
@@ -136,7 +137,7 @@ function Inbox() {
     try {
       setIsTyping(true);
       const res = await messageApi.sendMessage({
-        receiverId: activeChat.id,
+        conversationId: activeChat.id,
         content: text
       });
       const newMsg = res.data?.message;
@@ -145,7 +146,7 @@ function Inbox() {
       const message = {
         id: newMsg._id,
         sender: "me",
-        text: newMsg.content,
+        text: newMsg.content || newMsg.text,
         type,
         mediaUrl,
         locationName,

@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
-import { FiHeart, FiStar, FiMapPin, FiMessageCircle, FiEye } from "react-icons/fi";
+import { FiHeart, FiStar, FiMapPin, FiMessageCircle, FiEye, FiImage } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { messageApi } from "../../api/messageApi";
+import { getProductImageSrc } from "../../utils/productImage";
 
 function ProductCard({ item }) {
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -32,11 +34,22 @@ function ProductCard({ item }) {
     }
   };
 
-  const handleChatClick = (e) => {
+  const handleChatClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    toast.success(`Opening chat with ${item.seller}`);
-    navigate(`/messages?seller=${encodeURIComponent(item.seller)}`);
+    if (!isUserAuthenticated) {
+      toast.info("Please login to chat with sellers.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await messageApi.startConversation({ productId });
+      toast.success(`Opening chat with ${item.seller}`);
+      navigate(`/messages?conversationId=${response.data.conversation.id}`);
+    } catch (error) {
+      toast.error(error.message || "Unable to open chat.");
+    }
   };
 
   const renderStars = (rating = 0) => {
@@ -51,12 +64,7 @@ function ProductCard({ item }) {
     ));
   };
 
-  const dummyImage = `https://picsum.photos/seed/${item.id || item.name}/420/320`;
-  const imageSrc = item.image 
-    ? (item.image.startsWith("http") || item.image.includes(".png") || item.image.includes(".jpg")
-        ? (item.image.includes("/") ? item.image : `/src/assets/${item.image}`) 
-        : dummyImage)
-    : dummyImage;
+  const imageSrc = getProductImageSrc(item);
   const isSwap = item.status === "Swap" || item.productType === "Swap" || item.price === undefined;
 
   return (
@@ -71,25 +79,28 @@ function ProductCard({ item }) {
       <Link to={`/product/${item.id || item._id}`} className="flex flex-col h-full">
         {/* Image Section */}
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
-          {!imgLoaded && (
+          {imageSrc && !imgLoaded && (
             <div className="absolute inset-0 animate-pulse bg-slate-100/80" />
           )}
 
-          <motion.img
-            src={imageSrc}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = dummyImage;
-            }}
-            alt={item.name}
-            onLoad={() => setImgLoaded(true)}
-            loading="lazy"
-            className={`h-full w-full object-cover transition-all duration-500 ${
-              imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            }`}
-            whileHover={{ scale: 1.06 }}
-            transition={{ duration: 0.4 }}
-          />
+          {imageSrc ? (
+            <motion.img
+              src={imageSrc}
+              onError={() => setImgLoaded(true)}
+              alt={item.name}
+              onLoad={() => setImgLoaded(true)}
+              loading="lazy"
+              className={`h-full w-full object-cover transition-all duration-500 ${
+                imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              }`}
+              whileHover={{ scale: 1.06 }}
+              transition={{ duration: 0.4 }}
+            />
+          ) : (
+            <div className="grid h-full w-full place-items-center bg-slate-100 text-slate-300">
+              <FiImage className="h-10 w-10" />
+            </div>
+          )}
 
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-slate-900/0 to-slate-900/10 opacity-60 group-hover:opacity-80 transition-opacity duration-300" />

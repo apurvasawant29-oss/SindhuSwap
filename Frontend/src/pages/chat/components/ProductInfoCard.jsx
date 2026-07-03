@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { FiCheck, FiEye, FiX } from "react-icons/fi";
+import { getProductImageSrc } from "../../../utils/productImage";
 
 function ProductInfoCard({ product, onAcceptSwap, onRejectSwap }) {
   if (!product) return null;
+
+  const imageSrc = getProductImageSrc(product);
 
   const statusClass =
     product.swapStatus === "Accepted"
@@ -15,11 +18,17 @@ function ProductInfoCard({ product, onAcceptSwap, onRejectSwap }) {
     <div className="mx-4 mt-4 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-14 w-14 shrink-0 rounded-xl border border-slate-100 object-cover"
-          />
+          {imageSrc ? (
+            <img
+              src={imageSrc}
+              alt={product.name}
+              className="h-14 w-14 shrink-0 rounded-xl border border-slate-100 object-cover"
+            />
+          ) : (
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-slate-100 bg-slate-100 text-[10px] font-semibold text-slate-400">
+              No image
+            </div>
+          )}
           <div className="min-w-0">
             <h3 className="truncate text-sm font-bold text-slate-900">{product.name}</h3>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold text-slate-500">

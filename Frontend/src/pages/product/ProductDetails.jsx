@@ -6,9 +6,10 @@ import { FiHeart, FiMapPin, FiMessageCircle, FiRefreshCw, FiShield, FiShoppingBa
 import PageShell from "../../components/common/PageShell";
 import ProductCard from "../../components/cards/ProductCard";
 import { productApi } from "../../api/productApi";
+import { messageApi } from "../../api/messageApi";
 import { useWishlist } from "../../context/WishlistContext";
 import { useAuth } from "../../context/AuthContext";
-import productImage from "../../assets/images/book-cover.jpg";
+import { getProductGallery, getProductImageSrc } from "../../utils/productImage";
 import sellerImage from "../../assets/images/team-member.jpg";
 
 function ProductDetails() {
@@ -29,7 +30,8 @@ function ProductDetails() {
         const response = await productApi.details(id);
         const nextProduct = response.data.product;
         setProduct(nextProduct);
-        setSelectedImage(nextProduct.images?.[0] || nextProduct.image || productImage);
+        const galleryImages = getProductGallery(nextProduct);
+        setSelectedImage(galleryImages[0] || "");
 
         const similarResponse = await productApi.list({
           category: nextProduct.category,
@@ -49,10 +51,8 @@ function ProductDetails() {
     loadProduct();
   }, [id]);
 
-  const gallery = useMemo(() => {
-    const images = product?.images?.length ? product.images : [product?.image || productImage];
-    return images.filter(Boolean);
-  }, [product]);
+  const gallery = useMemo(() => getProductGallery(product), [product]);
+  const primaryImage = getProductImageSrc(product);
 
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
@@ -85,6 +85,21 @@ function ProductDetails() {
     }
   };
 
+  const handleChat = async () => {
+    if (!isUserAuthenticated) {
+      toast.info("Please login to chat with the seller.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await messageApi.startConversation({ productId: product.id || product._id });
+      navigate(`/messages?conversationId=${response.data.conversation.id}`);
+    } catch (err) {
+      toast.error(err.message || "Unable to open chat.");
+    }
+  };
+
   if (loading) {
     return (
       <PageShell>
@@ -109,7 +124,11 @@ function ProductDetails() {
     <PageShell>
       <section className="product-detail container">
         <div className="product-gallery">
-          <motion.img className="product-gallery__main" src={selectedImage || productImage} alt={product.name} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} />
+          {selectedImage ? (
+            <motion.img className="product-gallery__main" src={selectedImage} alt={product.name} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} />
+          ) : (
+            <div className="product-gallery__main grid place-items-center bg-slate-100 text-slate-400">No image uploaded</div>
+          )}
           <div className="product-thumbs">
             {gallery.map((image, index) => (
               <img src={image} alt={`${product.name} ${index + 1}`} key={`${image}-${index}`} onClick={() => setSelectedImage(image)} />
@@ -147,7 +166,7 @@ function ProductDetails() {
               <span>Verified seller - {product.sellerInfo?.taluka || product.taluka}</span>
               <small><FiShield /> Trusted community member</small>
             </div>
-            <button type="button"><FiMessageCircle /> Chat</button>
+            <button type="button" onClick={handleChat}><FiMessageCircle /> Chat</button>
           </div>
         </motion.aside>
       </section>
@@ -161,7 +180,7 @@ function ProductDetails() {
         ) : (
           <div className="similar-grid">
             <motion.article className="similar-card" whileHover={{ y: -7 }}>
-              <img src={product.image || productImage} alt={product.name} />
+              {primaryImage ? <img src={primaryImage} alt={product.name} /> : null}
               <h3>{product.name}</h3>
               <strong>{product.productType === "Swap" ? "Swap Only" : `Rs. ${Number(product.price || 0).toLocaleString("en-IN")}`}</strong>
               <a href="/categories"><FiShoppingBag /> Browse More</a>

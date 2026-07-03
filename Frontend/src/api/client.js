@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 
 export const USER_TOKEN_KEY = "sindhuswap_user_token";
 export const ADMIN_TOKEN_KEY = "sindhuswap_admin_token";
@@ -30,8 +30,19 @@ api.interceptors.response.use(
       error.message ||
       "Something went wrong";
 
+    if (error.response?.status === 401 && /token|unauthorized|expired/i.test(message)) {
+      localStorage.removeItem(USER_TOKEN_KEY);
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+      localStorage.removeItem("sindhuswap_user");
+      localStorage.removeItem("sindhuswap_admin");
+      localStorage.removeItem("userAuth");
+      localStorage.removeItem("adminAuth");
+      window.dispatchEvent(new Event("sindhuswap-auth-invalid"));
+    }
+
     return Promise.reject(new Error(message));
   }
 );
 
 export default api;
+

@@ -4,8 +4,8 @@ import { FiEye, FiHeart, FiMapPin, FiShoppingBag, FiStar, FiTrash2 } from "react
 import { toast } from "react-toastify";
 import PageShell from "../../components/common/PageShell";
 import { useWishlist } from "../../context/WishlistContext";
+import { getProductImageSrc } from "../../utils/productImage";
 import heroImage from "../../assets/images/community.jpg";
-import productImage from "../../assets/images/book-cover.jpg";
 
 function Wishlist() {
   const { wishlist: wishlistItems, isLoading: loading, removeFromWishlist } = useWishlist();
@@ -62,10 +62,15 @@ function Wishlist() {
 
 function WishlistCard({ item, onRemove }) {
   const product = item.product || item;
+  const imageSrc = getProductImageSrc(product);
   return (
     <motion.article className="wishlist-card" whileHover={{ y: -8 }}>
       <div className="wishlist-card__image">
-        <img src={product.image || productImage} alt={product.name} />
+        {imageSrc ? (
+          <img src={imageSrc} alt={product.name} />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-slate-100 text-slate-400 text-xs font-semibold">No image</div>
+        )}
         <button aria-label={`Remove ${product.name}`} onClick={() => onRemove(product.id)}><FiHeart /></button>
       </div>
       <div className="wishlist-card__body">

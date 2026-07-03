@@ -1,4 +1,10 @@
-const API_HOST = () => process.env.API_URL || `http://localhost:${process.env.PORT || 5000}`;
+const PUBLIC_BASE_URL = () => {
+  const configured = process.env.PUBLIC_BASE_URL || process.env.API_URL;
+  if (configured) {
+    return configured.replace(/\/api\/v1\/?$/, "").replace(/\/$/, "");
+  }
+  return `http://localhost:${process.env.PORT || 5000}`;
+};
 
 const imageUrl = (image) => {
   if (!image) {
@@ -6,14 +12,17 @@ const imageUrl = (image) => {
   }
 
   if (typeof image === "string") {
-    return image;
+    if (image.startsWith("http://") || image.startsWith("https://")) {
+      return image;
+    }
+    return image.startsWith("/") ? `${PUBLIC_BASE_URL()}${image}` : image;
   }
 
   if (image.url?.startsWith("http")) {
     return image.url;
   }
 
-  return image.url ? `${API_HOST()}${image.url}` : "";
+  return image.url ? `${PUBLIC_BASE_URL()}${image.url}` : "";
 };
 
 const formatUser = (user) => {

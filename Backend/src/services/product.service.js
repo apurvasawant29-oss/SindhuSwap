@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const Wishlist = require("../models/Wishlist");
 const SwapRequest = require("../models/SwapRequest");
+const Notification = require("../models/Notification");
 const ApiError = require("../utils/ApiError");
 const { ERROR_MESSAGES, HTTP_STATUS, ROLES } = require("../constants");
 const { getPagination, formatPagination } = require("../utils/pagination");
@@ -83,6 +84,13 @@ const createProduct = async ({ body, files = [], user }) => {
     owner: user._id,
   });
 
+  await Notification.create({
+    user: user._id,
+    title: "Product Added",
+    message: `${product.title} has been listed successfully.`,
+    type: "product",
+  });
+
   await product.populate(productPopulate);
   return formatProduct(product);
 };
@@ -134,6 +142,12 @@ const updateProduct = async ({ id, body, files = [], user }) => {
   }
 
   await product.save();
+  await Notification.create({
+    user: product.owner,
+    title: "Product Updated",
+    message: `${product.title} was updated successfully.`,
+    type: "product",
+  });
   await product.populate(productPopulate);
   return formatProduct(product);
 };

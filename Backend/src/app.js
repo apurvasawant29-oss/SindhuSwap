@@ -1,4 +1,4 @@
-const cookieParser = require("cookie-parser");
+﻿const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const express = require("express");
 const fs = require("fs");
@@ -16,10 +16,30 @@ const accessLogStream = fs.createWriteStream(path.join(logger.logDirectory, "acc
   flags: "a",
 });
 
-app.use(helmet());
+const configuredClientUrls = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
+const allowedOrigins = new Set([
+  ...configuredClientUrls,
+  "http://127.0.0.1:5173",
+  "http://localhost:5173",
+]);
+
+app.use(
+  helmet({
+    // Allow the React dev server (and other client origins) to load uploaded product images.
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -36,3 +56,4 @@ app.use(notFound);
 app.use(errorHandler);
 
 module.exports = app;
+

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const { ERROR_MESSAGES, HTTP_STATUS, ROLES, USER_STATUS } = require("../constants");
 const ApiError = require("../utils/ApiError");
 const generateToken = require("../utils/generateToken");
@@ -54,6 +55,13 @@ const register = async ({ fullName, email, phone, password, taluka }) => {
     phone,
     password,
     taluka,
+  });
+
+  await Notification.create({
+    user: user._id,
+    title: "Account Created",
+    message: "Welcome to SindhuSwap. Your account is ready.",
+    type: "system",
   });
 
   return buildAuthPayload(user);

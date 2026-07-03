@@ -1,5 +1,6 @@
 const Wishlist = require("../models/Wishlist");
 const Product = require("../models/Product");
+const Notification = require("../models/Notification");
 const ApiError = require("../utils/ApiError");
 const asyncHandler = require("../utils/asyncHandler");
 const { sendSuccess } = require("../utils/apiResponse");
@@ -38,13 +39,28 @@ const addWishlist = asyncHandler(async (req, res) => {
     { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
   ).populate(productPopulate);
 
+  await Notification.create({
+    user: req.user._id,
+    title: "Wishlist Updated",
+    message: `${product.title} was added to your wishlist.`,
+    type: "wishlist",
+  });
+
   return sendSuccess(res, HTTP_STATUS.CREATED, "Added to wishlist", {
     item: { id: item._id.toString(), product: formatProduct(item.product) },
   });
 });
 
 const removeWishlist = asyncHandler(async (req, res) => {
-  await Wishlist.deleteOne({ user: req.user._id, product: req.params.productId });
+  const item = await Wishlist.findOneAndDelete({ user: req.user._id, product: req.params.productId }).populate("product");
+  if (item?.product) {
+    await Notification.create({
+      user: req.user._id,
+      title: "Wishlist Updated",
+      message: `${item.product.title} was removed from your wishlist.`,
+      type: "wishlist",
+    });
+  }
   return sendSuccess(res, HTTP_STATUS.OK, "Removed from wishlist");
 });
 

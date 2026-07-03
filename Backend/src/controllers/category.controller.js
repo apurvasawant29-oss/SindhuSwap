@@ -2,6 +2,7 @@ const Category = require("../models/Category");
 const asyncHandler = require("../utils/asyncHandler");
 const { sendSuccess } = require("../utils/apiResponse");
 const { HTTP_STATUS, SUCCESS_MESSAGES } = require("../constants");
+const slugGenerator = require("../utils/slugGenerator");
 
 const defaultCategories = [
   "Mobiles",
@@ -34,7 +35,11 @@ const createCategory = asyncHandler(async (req, res) => {
 });
 
 const updateCategory = asyncHandler(async (req, res) => {
-  const category = await Category.findByIdAndUpdate(req.params.id, req.body, { returnDocument: "after" });
+  const update = { ...req.body };
+  if (update.name) {
+    update.slug = slugGenerator(update.name);
+  }
+  const category = await Category.findByIdAndUpdate(req.params.id, update, { returnDocument: "after" });
   return sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.UPDATED, { category });
 });
 

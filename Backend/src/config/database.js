@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 const dns = require("dns");
 if (dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder("ipv4first");
@@ -7,12 +7,19 @@ const logger = require("../utils/logger");
 
 const buildMongoUri = () => {
   const configuredUri = process.env.MONGO_URI?.trim();
+  const databaseName = process.env.MONGODB_DB_NAME || "SindhuSwap";
+
   if (configuredUri && !configuredUri.includes("<YOUR_MONGODB_PASSWORD>")) {
-    return configuredUri;
+    const queryIndex = configuredUri.indexOf("?");
+    const basePart = queryIndex >= 0 ? configuredUri.slice(0, queryIndex) : configuredUri;
+    const queryPart = queryIndex >= 0 ? configuredUri.slice(queryIndex) : "";
+    const hasDatabaseName = /\/[^/?]+$/.test(basePart);
+
+    return hasDatabaseName ? configuredUri : `${basePart.replace(/\/$/, "")}/${databaseName}${queryPart}`;
   }
+
   const username = process.env.MONGODB_USERNAME || "apurvasawant29_db_user";
   const password = process.env.MONGODB_PASSWORD;
-  const databaseName = process.env.MONGODB_DB_NAME || "SindhuSwap";
   if (password) {
     return `mongodb+srv://${encodeURIComponent(username)}:${encodeURIComponent(password)}@apurva.axohqc8.mongodb.net/${databaseName}?retryWrites=true&w=majority&appName=apurva`;
   }

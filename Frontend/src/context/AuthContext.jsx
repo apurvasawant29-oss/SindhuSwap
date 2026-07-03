@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { authApi } from "../api/authApi";
 import { ADMIN_TOKEN_KEY, USER_TOKEN_KEY } from "../api/client";
 
@@ -24,7 +24,15 @@ export function AuthProvider({ children }) {
   const [adminToken, setAdminToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY));
 
   useEffect(() => {
-    // Auth state is synchronized synchronously on mount.
+    const handleInvalidAuth = () => {
+      setUser(null);
+      setAdmin(null);
+      setUserToken(null);
+      setAdminToken(null);
+    };
+
+    window.addEventListener("sindhuswap-auth-invalid", handleInvalidAuth);
+    return () => window.removeEventListener("sindhuswap-auth-invalid", handleInvalidAuth);
   }, []);
 
   const loginUser = async ({ email, password }) => {
@@ -131,3 +139,4 @@ export function useAuth() {
   }
   return context;
 }
+

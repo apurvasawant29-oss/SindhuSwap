@@ -19,6 +19,7 @@ import {
 import { useAdmin } from "../context/AdminContext";
 import Skeleton from "../components/common/Skeleton";
 import ConfirmationModal from "../components/common/ConfirmationModal";
+import { getProductImageSrc } from "../../utils/productImage";
 
 export default function Products() {
   const { searchQuery } = useOutletContext(); // Quick search from header
@@ -337,7 +338,7 @@ export default function Products() {
                           className="w-10 h-10 rounded-lg border border-slate-200/80 overflow-hidden shrink-0 bg-slate-50 cursor-zoom-in"
                           onClick={() => setViewProduct(item)}
                         >
-                          <img src={item.image} className="w-full h-full object-cover" alt="" />
+                          <img src={getProductImageSrc(item)} className="w-full h-full object-cover" alt="" />
                         </div>
                         <div>
                           <span
@@ -444,7 +445,7 @@ export default function Products() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="aspect-video rounded-xl border border-slate-200 overflow-hidden bg-slate-50">
-                  <img src={viewProduct.image} className="w-full h-full object-cover" alt="" />
+                  <img src={getProductImageSrc(viewProduct)} className="w-full h-full object-cover" alt="" />
                 </div>
                 <div className="space-y-3 text-xs">
                   <div>
